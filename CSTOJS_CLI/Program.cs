@@ -20,7 +20,7 @@ namespace CSTOJS_CLI
 				new string[] {
 					"-Debug",
 					"/Debug"},
-				"Debug. When set to true prints additional info to console, cs lines to js file and creates file Debug.txt.");
+				"Debug. When set to true prints additional info to console, cs lines to js file.");
 			debugOption.SetDefaultValue(false);
 
 			fileCommand.AddOption(debugOption);
@@ -33,6 +33,16 @@ namespace CSTOJS_CLI
 			disableConsoleColorsOption.SetDefaultValue(false);
 
 			fileCommand.AddOption(disableConsoleColorsOption);
+
+
+			Option<bool> disableConsoleOutputOption = new(
+				new string[] {
+					"-DisableConsoleOutput",
+					"/DisableConsoleOutput"},
+				"Self-explanatory, Disable Console Output.");
+			disableConsoleColorsOption.SetDefaultValue(false);
+
+			fileCommand.AddOption(disableConsoleOutputOption);
 
 			Option<string> outPutPathOption = new(
 				new string[] {
@@ -59,7 +69,7 @@ namespace CSTOJS_CLI
 
 			rootCommand.AddCommand(fileCommand);
 
-			fileCommand.SetHandler(GenerateFile, pathArgument, new CLICSTOJSOptionsBinder(debugOption, disableConsoleColorsOption, outPutPathOption, useVarOverLetOption));
+			fileCommand.SetHandler(GenerateFile, pathArgument, new CLICSTOJSOptionsBinder(debugOption, disableConsoleColorsOption, disableConsoleOutputOption ,outPutPathOption, useVarOverLetOption));
 
 			return await rootCommand.InvokeAsync(args);
 		}
@@ -92,6 +102,7 @@ namespace CSTOJS_CLI
 	{
 		public bool Debug { get; set; } = false;
 		public bool DisableConsoleColors { get; set; } = false;
+		public bool DisableConsoleOutput { get; set; } = false;
 		public string OutPutPath { get; set; } = Directory.GetCurrentDirectory();
 		public bool UseVarOverLet { get; set; } = false;
 		//public List<Tuple<string, string>> CustomCSNamesToJS { get; set; } = new();
@@ -101,8 +112,13 @@ namespace CSTOJS_CLI
 
 		public bool IsDefault() 
 		{
-			if(Debug != false || DisableConsoleColors != false || UseVarOverLet != false)
+			if (Debug != false ||
+				DisableConsoleColors != false ||
+				DisableConsoleOutput != false ||
+				UseVarOverLet != false)
+			{
 				return false;
+			}
 
 			if(OutPutPath != Directory.GetCurrentDirectory())
 				return false;
@@ -115,13 +131,19 @@ namespace CSTOJS_CLI
 	{
 		private readonly Option<bool> _DebugOption;
 		private readonly Option<bool> _DisableConsoleColorsOption;
+		private readonly Option<bool> _DisableConsoleOutputOption;
 		private readonly Option<string> _OutPutPathOptionOption;
 		private readonly Option<bool> _UseVarOverLetOption;
 
-		public CLICSTOJSOptionsBinder(Option<bool> debugOption, Option<bool> disableConsoleColorsOption, Option<string?> outPutPathOptionOption, Option<bool> UseVarOverLetOption)
+		public CLICSTOJSOptionsBinder(Option<bool> debugOption, 
+			Option<bool> disableConsoleColorsOption,
+			Option<bool> disableConsoleOutputOption,
+			Option<string?> outPutPathOptionOption, 
+			Option<bool> UseVarOverLetOption)
 		{
 			_DebugOption = debugOption;
 			_DisableConsoleColorsOption = disableConsoleColorsOption;
+			_DisableConsoleOutputOption = disableConsoleOutputOption;
 			_OutPutPathOptionOption = outPutPathOptionOption;
 			_UseVarOverLetOption = UseVarOverLetOption;
 		}
@@ -131,6 +153,7 @@ namespace CSTOJS_CLI
 			{
 				Debug = bindingContext.ParseResult.GetValueForOption(_DebugOption),
 				DisableConsoleColors = bindingContext.ParseResult.GetValueForOption(_DisableConsoleColorsOption),
+				DisableConsoleOutput = bindingContext.ParseResult.GetValueForOption(_DisableConsoleOutputOption),
 				OutPutPath = bindingContext.ParseResult.GetValueForOption(_OutPutPathOptionOption),
 				UseVarOverLet = bindingContext.ParseResult.GetValueForOption(_UseVarOverLetOption)
 			};
