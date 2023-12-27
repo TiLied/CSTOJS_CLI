@@ -1,6 +1,8 @@
 ﻿using CSharpToJavaScript;
 using System.CommandLine;
 using System.CommandLine.Binding;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace CSTOJS_CLI
 {
@@ -15,6 +17,7 @@ namespace CSTOJS_CLI
 
 
 
+
 			//Options CSharpToJavaScript
 			Option<bool> debugOption = new(
 				new string[] {
@@ -24,6 +27,7 @@ namespace CSTOJS_CLI
 			debugOption.SetDefaultValue(false);
 
 			fileCommand.AddOption(debugOption);
+
 
 			Option<bool> disableConsoleColorsOption = new(
 				new string[] {
@@ -40,9 +44,11 @@ namespace CSTOJS_CLI
 					"-DisableConsoleOutput",
 					"/DisableConsoleOutput"},
 				"Self-explanatory, Disable Console Output.");
-			disableConsoleColorsOption.SetDefaultValue(false);
+			disableConsoleOutputOption.SetDefaultValue(false);
 
 			fileCommand.AddOption(disableConsoleOutputOption);
+
+
 
 			Option<string> outPutPathOption = new(
 				new string[] {
@@ -53,6 +59,8 @@ namespace CSTOJS_CLI
 
 			fileCommand.AddOption(outPutPathOption);
 
+
+
 			Option<bool> useVarOverLetOption = new(
 				new string[] {
 					"-UseVarOverLet",
@@ -61,6 +69,7 @@ namespace CSTOJS_CLI
 			useVarOverLetOption.SetDefaultValue(false);
 
 			fileCommand.AddOption(useVarOverLetOption);
+
 
 
 
@@ -74,12 +83,12 @@ namespace CSTOJS_CLI
 			return await rootCommand.InvokeAsync(args);
 		}
 
-		public static async Task GenerateFile(string? file, CLICSTOJSOptions? options)
+		public static async Task GenerateFile(string? file, CLICSTOJSOptions options)
 		{
 			if (file == null)
 				return;
-		
-			CSTOJS? _CSTOJS = null;
+
+			CSTOJS? _CSTOJS;
 
 			if (!options.IsDefault())
 			{
@@ -138,7 +147,7 @@ namespace CSTOJS_CLI
 		public CLICSTOJSOptionsBinder(Option<bool> debugOption, 
 			Option<bool> disableConsoleColorsOption,
 			Option<bool> disableConsoleOutputOption,
-			Option<string?> outPutPathOptionOption, 
+			Option<string> outPutPathOptionOption, 
 			Option<bool> UseVarOverLetOption)
 		{
 			_DebugOption = debugOption;

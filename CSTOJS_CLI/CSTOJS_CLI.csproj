@@ -1,18 +1,43 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-		<VersionPrefix>0.0.01</VersionPrefix>
+		<VersionPrefix>0.0.03</VersionPrefix>
 		
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>CSTOJS_CLI</RootNamespace>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PackAsTool>True</PackAsTool>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/TiLied/CSTOJS_CLI</RepositoryUrl>
+    <Authors>TiLied</Authors>
+    <Title>DotNet Tool for CSharpToJavaScript</Title>
+    <Description>DotNet Tool for CSharpToJavaScript library, using CLI.</Description>
+    <ToolCommandName>cstojs-cli</ToolCommandName>
+    <PackageId>TiLied.$(AssemblyName)</PackageId>
+    <PackageTags>tool, cli, csharp, c#, conversion, javascript, js, generating</PackageTags>
+    <PackageIcon>CSTOJS_128.png</PackageIcon>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CSharpToJavaScript" Version="0.0.5" />
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CSharpToJavaScript" Version="0.0.6" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Resources\CSTOJS_128.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+	
 
 </Project>
