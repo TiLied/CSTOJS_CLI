@@ -72,13 +72,43 @@ namespace CSTOJS_CLI
 
 
 
+			Option<bool> keepBraceOnTheSameLine = new(
+				new string[] {
+					"-KeepBraceOnTheSameLine",
+					"/KeepBraceOnTheSameLine"},
+				"Keep Brace { on the same line.");
+			keepBraceOnTheSameLine.SetDefaultValue(false);
+
+			fileCommand.AddOption(keepBraceOnTheSameLine);
+
+
+
+			Option<bool> normalizeWhitespace = new(
+				new string[] {
+					"-NormalizeWhitespace",
+					"/NormalizeWhitespace"},
+				"Self-explanatory, Normalize Whitespace.");
+			normalizeWhitespace.SetDefaultValue(false);
+
+			fileCommand.AddOption(normalizeWhitespace);
+
 
 			Argument<string> pathArgument = new("path", "Full path.");
 			fileCommand.AddArgument(pathArgument);
 
 			rootCommand.AddCommand(fileCommand);
 
-			fileCommand.SetHandler(GenerateFile, pathArgument, new CLICSTOJSOptionsBinder(debugOption, disableConsoleColorsOption, disableConsoleOutputOption ,outPutPathOption, useVarOverLetOption));
+
+			CLICSTOJSOptionsBinder binder = new(debugOption,
+				disableConsoleColorsOption,
+				disableConsoleOutputOption,
+				outPutPathOption,
+				useVarOverLetOption,
+				keepBraceOnTheSameLine,
+				normalizeWhitespace);
+
+
+			fileCommand.SetHandler(GenerateFile, pathArgument, binder);
 
 			return await rootCommand.InvokeAsync(args);
 		}
@@ -97,7 +127,9 @@ namespace CSTOJS_CLI
 					Debug = options.Debug,
 					DisableConsoleColors = options.DisableConsoleColors,
 					OutPutPath = options.OutPutPath,
-					UseVarOverLet = options.UseVarOverLet
+					UseVarOverLet = options.UseVarOverLet,
+					KeepBraceOnTheSameLine = options.KeepBraceOnTheSameLine,
+					NormalizeWhitespace = options.NormalizeWhitespace
 				});
 			}
 			else
@@ -114,6 +146,8 @@ namespace CSTOJS_CLI
 		public bool DisableConsoleOutput { get; set; } = false;
 		public string OutPutPath { get; set; } = Directory.GetCurrentDirectory();
 		public bool UseVarOverLet { get; set; } = false;
+		public bool KeepBraceOnTheSameLine { get; set; } = false;
+		public bool NormalizeWhitespace { get; set; } = false;
 		//public List<Tuple<string, string>> CustomCSNamesToJS { get; set; } = new();
 		//public List<Type> CustomCSTypesToJS { get; set; } = new();
 		//public StringBuilder AddSBInFront { get; set; } = new();
@@ -124,7 +158,9 @@ namespace CSTOJS_CLI
 			if (Debug != false ||
 				DisableConsoleColors != false ||
 				DisableConsoleOutput != false ||
-				UseVarOverLet != false)
+				UseVarOverLet != false ||
+				KeepBraceOnTheSameLine != false ||
+				NormalizeWhitespace != false)
 			{
 				return false;
 			}
@@ -143,18 +179,24 @@ namespace CSTOJS_CLI
 		private readonly Option<bool> _DisableConsoleOutputOption;
 		private readonly Option<string> _OutPutPathOptionOption;
 		private readonly Option<bool> _UseVarOverLetOption;
+		private readonly Option<bool> _KeepBraceOnTheSameLine;
+		private readonly Option<bool> _NormalizeWhitespace;
 
 		public CLICSTOJSOptionsBinder(Option<bool> debugOption, 
 			Option<bool> disableConsoleColorsOption,
 			Option<bool> disableConsoleOutputOption,
 			Option<string> outPutPathOptionOption, 
-			Option<bool> UseVarOverLetOption)
+			Option<bool> UseVarOverLetOption,
+			Option<bool> KeepBraceOnTheSameLine,
+			Option<bool> NormalizeWhitespace)
 		{
 			_DebugOption = debugOption;
 			_DisableConsoleColorsOption = disableConsoleColorsOption;
 			_DisableConsoleOutputOption = disableConsoleOutputOption;
 			_OutPutPathOptionOption = outPutPathOptionOption;
 			_UseVarOverLetOption = UseVarOverLetOption;
+			_KeepBraceOnTheSameLine = KeepBraceOnTheSameLine;
+			_NormalizeWhitespace = NormalizeWhitespace;
 		}
 
 		protected override CLICSTOJSOptions GetBoundValue(BindingContext bindingContext) =>
@@ -164,7 +206,9 @@ namespace CSTOJS_CLI
 				DisableConsoleColors = bindingContext.ParseResult.GetValueForOption(_DisableConsoleColorsOption),
 				DisableConsoleOutput = bindingContext.ParseResult.GetValueForOption(_DisableConsoleOutputOption),
 				OutPutPath = bindingContext.ParseResult.GetValueForOption(_OutPutPathOptionOption),
-				UseVarOverLet = bindingContext.ParseResult.GetValueForOption(_UseVarOverLetOption)
+				UseVarOverLet = bindingContext.ParseResult.GetValueForOption(_UseVarOverLetOption),
+				KeepBraceOnTheSameLine = bindingContext.ParseResult.GetValueForOption(_KeepBraceOnTheSameLine),
+				NormalizeWhitespace = bindingContext.ParseResult.GetValueForOption(_NormalizeWhitespace)
 			};
 	}
 }
