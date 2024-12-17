@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-		<VersionPrefix>0.0.03</VersionPrefix>
+		<VersionPrefix>0.0.04</VersionPrefix>
 		
     <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>CSTOJS_CLI</RootNamespace>
@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CSharpToJavaScript" Version="0.0.6" />
+    <PackageReference Include="CSharpToJavaScript" Version="0.0.7" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
   </ItemGroup>
 
