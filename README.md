@@ -5,13 +5,14 @@ Command Line Interface for [CSharpToJavaScript library](https://github.com/TiLie
 
 For download visit [Releases](https://github.com/TiLied/CSTOJS_CLI/releases).
 ## How to use
-- Download 7z from [Releases](https://github.com/TiLied/CSTOJS_CLI/releases), unzip the archive. 
-- Open cmd/powershell/terminal/console etc. in folder with "CSTOJS_CLI.dll".
-- Type `dotnet CSTOJS_CLI.dll` with command "f" folowed by path to cs file/folder. Example: `f "C:\GitReps\ConsoleAppTest\CSharp\Test.cs"`
-- Use `-h` and `f -h` for more information. 
+- Download 7z from [Releases](https://github.com/TiLied/CSTOJS_CLI/releases), unzip the archive.
+- If using "Framework-dependent" .Net 8 is required.
+- Open cmd/powershell/terminal/console etc. in the folder with "CSTOJS_CLI".
+- Type `./CSTOJS_CLI` or `dotnet CSTOJS_CLI.dll` if "Framework-dependent", with command "f" followed by the path to cs file/folder. Example: `./CSTOJS_CLI f "C:\GitReps\ConsoleAppTest\CSharp\Test.cs"`
+- Use `-h` and `f -h`, `c -h`  for more information. 
 
 ## Some Todos
-- [ ] Add the remaining [options](https://github.com/TiLied/CSharpToJavaScript/blob/master/CSharpToJavaScript/CSTOJSOptions.cs).
+- [x] ~Add the remaining [options](https://github.com/TiLied/CSharpToJavaScript/blob/master/CSharpToJavaScript/CSTOJSOptions.cs).~
 
 ## Related Repository 
 CSharpToJavaScript library: https://github.com/TiLied/CSharpToJavaScript
