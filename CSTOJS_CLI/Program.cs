@@ -140,9 +140,11 @@ public class Program
 			CustomCSNamesToJS = parseResult.GetValue<string>("-CustomCSNamesToJS")
 		};
 
-		CSTOJS _CSTOJS = InitiateCSTOJS(options);
+		CSTOJS _CSTOJS = new();
 
-		_CSTOJS.GenerateOneContinuously(file);
+		CSTOJSOptions cstojsOptions = InitiateCSTOJS(options);
+
+		_CSTOJS.GenerateOneContinuously(file, cstojsOptions);
 
 		Console.WriteLine("Press any button to stop wathing.");
 		Console.ReadLine();
@@ -170,20 +172,22 @@ public class Program
 			CustomCSNamesToJS = parseResult.GetValue<string>("-CustomCSNamesToJS")
 		};
 
-		CSTOJS _CSTOJS = InitiateCSTOJS(options);
+		CSTOJS _CSTOJS = new();
 
-		await _CSTOJS.GenerateOneAsync(file);
+		CSTOJSOptions cstojsOptions = InitiateCSTOJS(options);
+
+		await _CSTOJS.GenerateOneAsync(file, cstojsOptions);
 	}
 
-	private static CSTOJS InitiateCSTOJS(CLICSTOJSOptions options)
+	private static CSTOJSOptions InitiateCSTOJS(CLICSTOJSOptions options)
 	{
-		CSTOJS? _CSTOJS;
+		CSTOJSOptions? _opt;
 
 		if (!options.IsDefault())
 		{
 			string customNames = options.CustomCSNamesToJS.Replace(" ", "").Trim();
 
-			List<Tuple<string, string>> _cstojsList = new();
+			Dictionary<string, string> _cstojsList = new();
 
 			if (customNames != string.Empty)
 			{
@@ -195,7 +199,7 @@ public class Program
 					for (int i = 0; i < _localTuples.Length; i++)
 					{
 						string[] _local = _localTuples[i].Split('-');
-						_cstojsList.Add(new(_local[0], _local[1]));
+						_cstojsList.Add(_local[0], _local[1]);
 					}
 				}
 				else
@@ -203,20 +207,20 @@ public class Program
 					if (customNames.Contains('-'))
 					{
 						string[] _local = customNames.Split('-');
-						_cstojsList.Add(new(_local[0], _local[1]));
+						_cstojsList.Add(_local[0], _local[1]);
 					}
 				}
 			}
 
 
 
-			_CSTOJS = new(new()
+			_opt = new()
 			{
 				Debug = options.Debug,
 
 				DisableConsoleColors = options.DisableConsoleColors,
 
-				OutPutPath = options.OutPutPath,
+				OutputPath = options.OutPutPath,
 
 				UseVarOverLet = options.UseVarOverLet,
 				KeepBraceOnTheSameLine = options.KeepBraceOnTheSameLine,
@@ -224,12 +228,12 @@ public class Program
 				UseStrictEquality = options.UseStrictEquality,
 
 				CustomCSNamesToJS = _cstojsList
-			});
+			};
 		}
 		else
-			_CSTOJS = new();
+			_opt = new();
 
-		return _CSTOJS;
+		return _opt;
 	}
 }
 
