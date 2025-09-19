@@ -4,6 +4,8 @@ using System;
 using System.CommandLine;
 using System.IO;
 using System.Threading.Tasks;
+using System.Diagnostics;
+using System.Xml;
 
 namespace CSTOJS_CLI;
 
@@ -107,8 +109,7 @@ public class Program
 		continuousCommand.Options.Add(useStrictEquality);
 		continuousCommand.Options.Add(customCSNamesToJS);
 		//
-
-
+		
 		rootCommand.Subcommands.Add(fileCommand);
 		rootCommand.Subcommands.Add(continuousCommand);
 
@@ -116,9 +117,109 @@ public class Program
 		
 		continuousCommand.SetAction(GenerateContinuously);
 
+
+		Command setupCommand = new("setup", "Setup cstojs project.");
+		Argument<string> outputArgument = new("folder")
+		{
+			Description = "Output folder."
+		};
+		setupCommand.Arguments.Add(outputArgument);
+		setupCommand.SetAction(SetupAction);
+
+		Command translateCommand = new("translate", "Translate to the js.");
+		translateCommand.SetAction(TranslateAction);
+
+		rootCommand.Subcommands.Add(setupCommand);
+		rootCommand.Subcommands.Add(translateCommand);
+		
 		ParseResult parseResult = rootCommand.Parse(args);
 		return parseResult.Invoke();
 }
+
+	public static void SetupAction(ParseResult result)
+	{
+		string folder = result.GetRequiredValue<string>("folder");
+
+		Console.WriteLine("Running: 'dotnet new console -f net10.0'");
+		ProcessStartInfo startInfo = new()
+		{
+			FileName = "dotnet",
+			Arguments = "new console -f net10.0",
+
+			UseShellExecute = false,
+			RedirectStandardOutput = true,
+			CreateNoWindow = true
+		};
+		Process proc = new() { StartInfo = startInfo };
+		proc.Start();
+		proc.WaitForExit();
+
+		Console.WriteLine("Adding CSharpToJavaScript package: 'dotnet add package CSharpToJavaScript'");
+		startInfo.Arguments = "add package CSharpToJavaScript";
+		proc.Start();
+		proc.WaitForExit();
+
+		Console.WriteLine($"Creating an output folder: '{folder}'");
+		Directory.CreateDirectory(folder);
+
+		Console.WriteLine($"Creating 'cstojs_options.xml'");
+		XmlDocument doc = new();
+
+		XmlElement root = doc.CreateElement(string.Empty, "Options", string.Empty);
+
+		XmlElement output = doc.CreateElement("Output");
+		output.SetAttribute("Folder", "./" + folder);
+		root.AppendChild(output);
+
+		XmlElement file = doc.CreateElement("File");
+		file.SetAttribute("Source", "./Program.cs");
+		root.AppendChild(file);
+
+		doc.AppendChild(root);
+		doc.Save("cstojs_options.xml");
+
+		Console.WriteLine($"Setup ended! Try running 'cstojs-cli translate'");
+	}
+
+	public static async Task TranslateAction(ParseResult result)
+	{
+		CSTOJS cstojs = new();
+		CSTOJSOptions options = new();
+		Dictionary<string, CSTOJSOptions> files = new();
+
+		using (XmlReader reader = XmlReader.Create("cstojs_options.xml"))
+		{
+			while (reader.Read())
+			{
+
+				switch (reader.NodeType)
+				{
+					case XmlNodeType.Element:
+						{
+							Console.WriteLine("Start Element {0}", reader.Name);
+							if (reader.HasAttributes)
+								Console.WriteLine("Attribute {0}", reader.GetAttribute(0));
+							if (reader.Name == "Output")
+								options.OutputPath = reader.GetAttribute(0);
+							if (reader.Name == "File")
+							{
+								files.Add(reader.GetAttribute(0), options);
+							}
+							break;
+						}
+					default:
+						Console.WriteLine($"-Other node: {reader.NodeType} | Value: {reader.Value}");
+						break;
+				}
+			}
+		}
+		
+		foreach(KeyValuePair<string, CSTOJSOptions> keyValue in files)
+		{
+			await cstojs.GenerateOneAsync(keyValue.Key, keyValue.Value);
+		}
+	}
+
 
 	public static void GenerateContinuously(ParseResult parseResult)
 	{
