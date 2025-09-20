@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Xml;
+using System.Text;
 
 namespace CSTOJS_CLI;
 
@@ -126,7 +127,7 @@ public class Program
 		setupCommand.Arguments.Add(outputArgument);
 		setupCommand.SetAction(SetupAction);
 
-		Command translateCommand = new("translate", "Translate to the js.");
+		Command translateCommand = new("translate", "Translate specified files in 'cstojs_options.xml'.");
 		translateCommand.SetAction(TranslateAction);
 
 		rootCommand.Subcommands.Add(setupCommand);
@@ -165,7 +166,7 @@ public class Program
 		Console.WriteLine($"Creating 'cstojs_options.xml'");
 		XmlDocument doc = new();
 
-		XmlElement root = doc.CreateElement(string.Empty, "Options", string.Empty);
+		XmlElement root = doc.CreateElement(string.Empty, "ProjectOptions", string.Empty);
 
 		XmlElement output = doc.CreateElement("Output");
 		output.SetAttribute("Folder", "./" + folder);
@@ -184,9 +185,16 @@ public class Program
 	public static async Task TranslateAction(ParseResult result)
 	{
 		CSTOJS cstojs = new();
-		CSTOJSOptions options = new();
-		Dictionary<string, CSTOJSOptions> files = new();
+		
+		CSTOJSOptions defaultOptions = new();
+		string currentFile = string.Empty;
 
+		string outputPath = string.Empty;
+
+		Dictionary<string, CSTOJSOptions> files = new();
+		
+		string pathCombined = string.Empty;
+		
 		using (XmlReader reader = XmlReader.Create("cstojs_options.xml"))
 		{
 			while (reader.Read())
@@ -197,14 +205,44 @@ public class Program
 					case XmlNodeType.Element:
 						{
 							Console.WriteLine("Start Element {0}", reader.Name);
-							if (reader.HasAttributes)
-								Console.WriteLine("Attribute {0}", reader.GetAttribute(0));
+
 							if (reader.Name == "Output")
-								options.OutputPath = reader.GetAttribute(0);
+							{
+								outputPath = reader.GetAttribute(0);
+								break;
+							}
 							if (reader.Name == "File")
 							{
-								files.Add(reader.GetAttribute(0), options);
+								currentFile = reader.GetAttribute("Source");
+								if (reader.IsEmptyElement)
+									files.Add(currentFile, defaultOptions);
+								else
+									files.Add(currentFile, new());
+								break;
 							}
+							if (reader.Name == "Option")
+							{
+								string? _debug = reader.GetAttribute("Debug");
+
+								if (currentFile == string.Empty)
+								{
+									if (_debug != null)
+										defaultOptions.Debug = bool.Parse(_debug);
+								}
+								else
+								{
+									if (_debug != null)
+										files[currentFile].Debug = bool.Parse(_debug);
+								}
+								break;
+							}
+							break;
+						}
+					case XmlNodeType.EndElement:
+						{
+							Console.WriteLine("End Element {0}", reader.Name);
+							if (reader.Name == "File")
+								currentFile = string.Empty;
 							break;
 						}
 					default:
@@ -213,10 +251,13 @@ public class Program
 				}
 			}
 		}
-		
-		foreach(KeyValuePair<string, CSTOJSOptions> keyValue in files)
+
+		foreach (KeyValuePair<string, CSTOJSOptions> keyValue in files)
 		{
-			await cstojs.GenerateOneAsync(keyValue.Key, keyValue.Value);
+			List<StringBuilder> _sb = cstojs.GenerateOne(keyValue.Key, keyValue.Value);
+			pathCombined = Path.Combine(outputPath, keyValue.Key.Replace(".cs", ".js"));
+			await File.WriteAllTextAsync(pathCombined, _sb[0].ToString());
+			Console.WriteLine($"--- Path: {Path.GetFullPath(pathCombined)}");
 		}
 	}
 
