@@ -191,6 +191,7 @@ public class Program
 										defaultOptions.Debug = bool.Parse(Debug);
 									else
 										currentFile.OptionsForFile.Debug = bool.Parse(Debug);
+									break;
 								}
 								if (UseVarOverLet != null)
 								{
@@ -198,6 +199,7 @@ public class Program
 										defaultOptions.UseVarOverLet = bool.Parse(UseVarOverLet);
 									else
 										currentFile.OptionsForFile.UseVarOverLet = bool.Parse(UseVarOverLet);
+									break;
 								}
 								if (KeepBraceOnTheSameLine != null)
 								{
@@ -205,6 +207,7 @@ public class Program
 										defaultOptions.KeepBraceOnTheSameLine = bool.Parse(KeepBraceOnTheSameLine);
 									else
 										currentFile.OptionsForFile.KeepBraceOnTheSameLine = bool.Parse(KeepBraceOnTheSameLine);
+									break;
 								}
 								if (NormalizeWhitespace != null)
 								{
@@ -212,6 +215,7 @@ public class Program
 										defaultOptions.NormalizeWhitespace = bool.Parse(NormalizeWhitespace);
 									else
 										currentFile.OptionsForFile.NormalizeWhitespace = bool.Parse(NormalizeWhitespace);
+									break;
 								}
 								if (UseStrictEquality != null)
 								{
@@ -219,6 +223,7 @@ public class Program
 										defaultOptions.UseStrictEquality = bool.Parse(UseStrictEquality);
 									else
 										currentFile.OptionsForFile.UseStrictEquality = bool.Parse(UseStrictEquality);
+									break;
 								}
 								if (TranslateFile != null)
 								{
@@ -226,13 +231,14 @@ public class Program
 										defaultOptions.TranslateFile = bool.Parse(TranslateFile);
 									else
 										currentFile.OptionsForFile.TranslateFile = bool.Parse(TranslateFile);
+									break;
 								}
 
 								if (CustomCSNamesToJS != null)
 								{
 									Dictionary<string, string> _customCSNamesToJSList = new();
 									string[] _localTuples;
-									
+
 									if (CustomCSNamesToJS.Contains(','))
 									{
 										_localTuples = CustomCSNamesToJS.Split(",");
@@ -251,21 +257,23 @@ public class Program
 											_customCSNamesToJSList.Add(_local[0], _local[1]);
 										}
 									}
-									
+
 									if (currentFile == null)
 										defaultOptions.CustomCSNamesToJS = _customCSNamesToJSList;
 									else
 										currentFile.OptionsForFile.CustomCSNamesToJS = _customCSNamesToJSList;
+									break;
 								}
 								if (AddSBAtTheTop != null)
 								{
 									StringBuilder _sb = new();
 									_sb.Append(AddSBAtTheTop);
-									
+
 									if (currentFile == null)
 										defaultOptions.AddSBAtTheTop = _sb;
 									else
 										currentFile.OptionsForFile.AddSBAtTheTop = _sb;
+									break;
 								}
 								if (AddSBAtTheBottom != null)
 								{
@@ -276,10 +284,11 @@ public class Program
 										defaultOptions.AddSBAtTheBottom = _sb;
 									else
 										currentFile.OptionsForFile.AddSBAtTheBottom = _sb;
+									break;
 								}
 								
 								Log.ErrorLine($"Unknown option: value: {reader.GetAttribute(0)}");
-								break;
+								return;
 							}
 							break;
 						}
