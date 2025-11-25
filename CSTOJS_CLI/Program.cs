@@ -24,9 +24,18 @@ public class Program
 		setupCommand.Arguments.Add(outputArgument);
 		setupCommand.SetAction(SetupAction);
 
-		Command translateCommand = new("translate", "Translate specified files in 'cstojs_options.xml'.");
+		Command translateCommand = new("translate", "Translate specified files in the 'cstojs_options.xml'.");
 		translateCommand.SetAction(TranslateAction);
 
+		Option<string> projectPath = new("--project", "-p")
+		{
+			HelpName = "path",
+			Description = "Path to the 'cstojs_options.xml'.",
+			DefaultValueFactory = (r) => { return "./cstojs_options.xml"; }
+		};
+		
+		translateCommand.Options.Add(projectPath);
+		
 		rootCommand.Subcommands.Add(setupCommand);
 		rootCommand.Subcommands.Add(translateCommand);
 		
@@ -95,6 +104,13 @@ public class Program
 		dynamic ret = m.Invoke(null, new dynamic[] { new dynamic[] { fileDataInst }, null });
 		Log.WriteLine($"SampleMethod returned {ret[0].TranslatedStr}.");
 		*/
+		string projectPath = result.GetValue<string>("--project") ?? "./cstojs_options.xml";
+		if (!File.Exists(projectPath))
+		{
+			Log.ErrorLine($"File 'cstojs_options.xml' does not exists: {projectPath}");
+			return;
+		}
+		string directoryPath = Path.GetDirectoryName(Path.GetFullPath(projectPath)) ?? "./";
 		
 		CSTOJSOptions defaultOptions = new();
 
@@ -105,20 +121,20 @@ public class Program
 		List<FileData> files = new();
 
 		string pathCombined = string.Empty;
-
-		//Options:
+		
+		//CSTOJS Options:
 		string? Debug = null;
+		string? DisableCompilationErrors = null;
 		string? UseVarOverLet = null;
 		string? KeepBraceOnTheSameLine = null;
 		string? NormalizeWhitespace = null;
-		string? UseStrictEquality = null;
 		string? TranslateFile = null;
 		
 		string? CustomCSNamesToJS = null;
 		string? AddSBAtTheTop = null;
 		string? AddSBAtTheBottom = null;
 
-		using (XmlReader reader = XmlReader.Create("cstojs_options.xml"))
+		using (XmlReader reader = XmlReader.Create($"{projectPath}"))
 		{
 			while (reader.Read())
 			{
@@ -136,12 +152,12 @@ public class Program
 									Log.ErrorLine("Folder attribute is null!");
 									return;
 								}
-								if (!Directory.Exists(_output))
+								if (!Directory.Exists(Path.Combine(directoryPath, _output)))
 								{
-									Log.ErrorLine($"Directory does not exists: {_output}");
+									Log.ErrorLine($"Directory does not exists: {Path.Combine(directoryPath, _output)}");
 									return;
 								}
-								outputPath = _output;
+								outputPath = Path.Combine(directoryPath, _output);
 								break;
 							}
 							if (reader.Name == "File")
@@ -152,16 +168,16 @@ public class Program
 									Log.ErrorLine("Source attribute is null!");
 									return;
 								}
-								if (!File.Exists(_source))
+								if (!File.Exists(Path.Combine(directoryPath, _source)))
 								{
-									Log.ErrorLine($"File does not exists: {_source}");
+									Log.ErrorLine($"File does not exists: {Path.Combine(directoryPath, _source)}");
 									return;
 								}
 
 								currentFile = new()
 								{
 									PathID = _source.Replace(".cs", ".js"),
-									SourceStr = File.ReadAllText(_source)
+									SourceStr = File.ReadAllText(Path.Combine(directoryPath, _source))
 								};
 
 								if (reader.IsEmptyElement)
@@ -175,10 +191,10 @@ public class Program
 							if (reader.Name == "Option")
 							{
 								Debug = reader.GetAttribute("Debug");
+								DisableCompilationErrors = reader.GetAttribute("DisableCompilationErrors");
 								UseVarOverLet = reader.GetAttribute("UseVarOverLet");
 								KeepBraceOnTheSameLine = reader.GetAttribute("KeepBraceOnTheSameLine");
 								NormalizeWhitespace = reader.GetAttribute("NormalizeWhitespace");
-								UseStrictEquality = reader.GetAttribute("UseStrictEquality");
 								TranslateFile = reader.GetAttribute("TranslateFile");
 
 								CustomCSNamesToJS = reader.GetAttribute("CustomCSNamesToJS");
@@ -191,6 +207,14 @@ public class Program
 										defaultOptions.Debug = bool.Parse(Debug);
 									else
 										currentFile.OptionsForFile.Debug = bool.Parse(Debug);
+									break;
+								}
+								if (DisableCompilationErrors != null)
+								{
+									if (currentFile == null)
+										defaultOptions.DisableCompilationErrors = bool.Parse(DisableCompilationErrors);
+									else
+										currentFile.OptionsForFile.DisableCompilationErrors = bool.Parse(DisableCompilationErrors);
 									break;
 								}
 								if (UseVarOverLet != null)
@@ -215,14 +239,6 @@ public class Program
 										defaultOptions.NormalizeWhitespace = bool.Parse(NormalizeWhitespace);
 									else
 										currentFile.OptionsForFile.NormalizeWhitespace = bool.Parse(NormalizeWhitespace);
-									break;
-								}
-								if (UseStrictEquality != null)
-								{
-									if (currentFile == null)
-										defaultOptions.UseStrictEquality = bool.Parse(UseStrictEquality);
-									else
-										currentFile.OptionsForFile.UseStrictEquality = bool.Parse(UseStrictEquality);
 									break;
 								}
 								if (TranslateFile != null)
