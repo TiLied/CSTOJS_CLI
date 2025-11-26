@@ -10,7 +10,6 @@ List<Tuple<string, string>> archs = new();
 archs.Add(new("any", "false"));
 
 //https://learn.microsoft.com/ru-ru/dotnet/core/rid-catalog
-
 archs.Add(new("win-x64", "true"));
 archs.Add(new("win-x86", "true"));
 archs.Add(new("win-arm64", "true"));
