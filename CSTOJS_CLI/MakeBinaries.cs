@@ -47,5 +47,5 @@ for (int i = 0; i < archs.Count; i++)
 	string _directoryName = $"CSTOJS_CLI-{archs[i].Item1}";
 	
 	Console.WriteLine($"Zip binary: {_directoryName}");
-	ZipFile.CreateFromDirectory($"./bin/binaries/{_directoryName}", $"./bin/zip/{_directoryName}.zip");
+	ZipFile.CreateFromDirectory($"./bin/binaries/{_directoryName}/", $"./bin/zip/{_directoryName}.zip");
 }
