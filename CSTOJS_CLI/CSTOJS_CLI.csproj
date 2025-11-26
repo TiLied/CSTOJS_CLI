@@ -22,7 +22,11 @@
 	
     <OutputType>Exe</OutputType>
   </PropertyGroup>
-
+  
+  <ItemGroup>
+  	<Compile Remove="./CSTOJS_CLI/MakeBinaries.cs" />
+  </ItemGroup>
+  
   <ItemGroup>
     <None Include="..\LICENSE">
       <Pack>True</Pack>
