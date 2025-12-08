@@ -55,15 +55,20 @@ public class Program
 
 			UseShellExecute = false,
 			RedirectStandardOutput = true,
+			RedirectStandardError = true,
 			CreateNoWindow = true
 		};
 		Process proc = new() { StartInfo = startInfo };
 		proc.Start();
+		Log.WriteLine(proc.StandardOutput.ReadToEnd());
+		Log.WriteLine(proc.StandardError.ReadToEnd());
 		proc.WaitForExit();
 
 		Log.InfoLine("Adding CSharpToJavaScript package: 'dotnet add package CSharpToJavaScript'");
 		startInfo.Arguments = "add package CSharpToJavaScript";
 		proc.Start();
+		Log.WriteLine(proc.StandardOutput.ReadToEnd());
+		Log.WriteLine(proc.StandardError.ReadToEnd());
 		proc.WaitForExit();
 
 		Log.InfoLine($"Creating an output folder: '{folder}'");

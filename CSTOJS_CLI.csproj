@@ -24,7 +24,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-  	<Compile Remove="./CSTOJS_CLI/MakeBinaries.cs" />
+  	<Compile Remove="./MakeBinaries.cs" />
   </ItemGroup>
   
   <ItemGroup>
@@ -39,14 +39,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="./Resources/CSTOJS_128.png">
+    <None Include="./CSTOJS_CLI/Resources/CSTOJS_128.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CSharpToJavaScript" Version="0.1.1" />
+    <PackageReference Include="CSharpToJavaScript" Version="0.1.2" />
     <PackageReference Include="System.CommandLine" Version="2.0.0" />
   </ItemGroup>	
 

@@ -1,5 +1,6 @@
-//¯\_(ツ)_/¯
 //#!/usr/local/share/dotnet/dotnet run
+//dotnet run --file ./MakeBinaries.cs
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
