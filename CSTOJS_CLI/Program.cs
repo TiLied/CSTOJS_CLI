@@ -19,7 +19,7 @@ public class Program
 		Command setupCommand = new("setup", "Setup cstojs project.");
 		Argument<string> outputArgument = new("folder")
 		{
-			Description = "Output folder."
+			Description = "Output folder. Can be absolute path or relative."
 		};
 		setupCommand.Arguments.Add(outputArgument);
 		setupCommand.SetAction(SetupAction);
@@ -71,7 +71,7 @@ public class Program
 		Log.WriteLine(proc.StandardError.ReadToEnd());
 		proc.WaitForExit();
 
-		Log.InfoLine($"Creating an output folder: '{folder}'");
+		Log.InfoLine($"Creating an output folder: '{Path.GetFullPath(folder)}'");
 		Directory.CreateDirectory(folder);
 
 		Log.InfoLine($"Creating 'cstojs_options.xml'");
@@ -157,12 +157,25 @@ public class Program
 									Log.ErrorLine("Folder attribute is null!");
 									return;
 								}
-								if (!Directory.Exists(Path.Combine(directoryPath, _output)))
+								if (Path.IsPathRooted(_output))
 								{
-									Log.ErrorLine($"Directory does not exists: {Path.Combine(directoryPath, _output)}");
-									return;
+									if (!Directory.Exists(Path.GetFullPath(_output)))
+									{
+										Log.ErrorLine($"Directory does not exists: {Path.Combine(directoryPath, _output)}");
+										return;
+									}
+									outputPath = Path.GetFullPath(_output);
 								}
-								outputPath = Path.Combine(directoryPath, _output);
+								else
+								{
+									if (!Directory.Exists(Path.Combine(directoryPath, _output)))
+									{
+										Log.ErrorLine($"Directory does not exists: {Path.Combine(directoryPath, _output)}");
+										return;
+									}
+
+									outputPath = Path.Combine(directoryPath, _output);
+								}
 								break;
 							}
 							if (reader.Name == "File")
