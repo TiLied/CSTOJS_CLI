@@ -89,6 +89,12 @@ dotnet tool uninstall --global TiLied.CSTOJS_CLI
 </ProjectOptions>
 ```
 
+## Tutorials/Examples
+- [Hello world](https://tilied.github.io/CSTOJS_Pages/tutorials/hello-world.html#hello-world)
+- [Simple todo](https://tilied.github.io/CSTOJS_Pages/tutorials/simple-todo.html)
+
+[More on a website](https://tilied.github.io/CSTOJS_Pages/tutorials/hello-world.html)
+
 ## Commands
 Run subcommands with `-h` to get more information.
 ```
