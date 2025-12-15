@@ -10,7 +10,8 @@ using System.IO.Compression;
 List<Tuple<string, string>> archs = new();
 archs.Add(new("any", "false"));
 
-//https://learn.microsoft.com/ru-ru/dotnet/core/rid-catalog
+//https://learn.microsoft.com/en-us/dotnet/core/rid-catalog
+//see more at https://github.com/dotnet/runtime/blob/main/src/libraries/Microsoft.NETCore.Platforms/src/PortableRuntimeIdentifierGraph.json
 archs.Add(new("win-x64", "true"));
 archs.Add(new("win-x86", "true"));
 archs.Add(new("win-arm64", "true"));
