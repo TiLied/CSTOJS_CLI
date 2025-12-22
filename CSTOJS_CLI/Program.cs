@@ -147,7 +147,7 @@ public class Program
 				{
 					case XmlNodeType.Element:
 						{
-							Log.WriteLine($"Start Element {reader.Name}");
+							//Log.WriteLine($"Start Element {reader.Name}");
 
 							if (reader.Name == "Output")
 							{
@@ -320,8 +320,14 @@ public class Program
 										currentFile.OptionsForFile.AddSBAtTheBottom = _sb;
 									break;
 								}
-								
-								Log.ErrorLine($"Unknown option: value: {reader.GetAttribute(0)}");
+
+								//https://stackoverflow.com/a/21009476
+								if (reader.MoveToNextAttribute())
+								{
+									string _name = reader.Name;
+									string _value = reader.Value;
+									Log.ErrorLine($"Unknown attribute! Attribute name: '{_name}' Attribute value: '{_value}'");
+								}
 								return;
 							}
 							break;
