@@ -16,11 +16,16 @@ public class Program
 	{
 		RootCommand rootCommand = new("Dotnet tool/cli for a CSharpToJavaScript library.");
 
-		Command setupCommand = new("setup", "Setup cstojs project.");
 		Argument<string> outputArgument = new("folder")
 		{
 			Description = "Output folder. Can be absolute path or relative."
 		};
+
+		Command initCommand = new("init", "Create a barebone 'cstojs_options.xml', without running the dotnet commands.");
+		initCommand.Arguments.Add(outputArgument);
+		initCommand.SetAction(InitAction);
+
+		Command setupCommand = new("setup", "Setup cstojs project.");
 		setupCommand.Arguments.Add(outputArgument);
 		setupCommand.SetAction(SetupAction);
 
@@ -36,6 +41,7 @@ public class Program
 		
 		translateCommand.Options.Add(projectPath);
 		
+		rootCommand.Subcommands.Add(initCommand);
 		rootCommand.Subcommands.Add(setupCommand);
 		rootCommand.Subcommands.Add(translateCommand);
 		
@@ -43,6 +49,34 @@ public class Program
 		return parseResult.Invoke();
 	}
 
+	public static void InitAction(ParseResult result)
+	{
+		if (File.Exists("./cstojs_options.xml"))
+		{
+			Log.ErrorLine($"'cstojs_options.xml' already exists!");
+			return;
+		}
+		
+		string folder = result.GetRequiredValue<string>("folder");
+
+		Log.InfoLine($"Creating an output folder: '{Path.GetFullPath(folder)}'");
+		Directory.CreateDirectory(folder);
+
+		Log.InfoLine($"Creating 'cstojs_options.xml'");
+		XmlDocument doc = new();
+
+		XmlElement root = doc.CreateElement(string.Empty, "ProjectOptions", string.Empty);
+
+		XmlElement output = doc.CreateElement("Output");
+		output.SetAttribute("Folder", folder);
+		root.AppendChild(output);
+
+		doc.AppendChild(root);
+		doc.Save("cstojs_options.xml");
+
+		Log.InfoLine($"Init ended!");
+	}
+	
 	public static void SetupAction(ParseResult result)
 	{
 		string folder = result.GetRequiredValue<string>("folder");
