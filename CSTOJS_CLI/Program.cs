@@ -38,13 +38,13 @@ public class Program
 			Description = "Path to the 'cstojs_options.xml'.",
 			DefaultValueFactory = (r) => { return "./cstojs_options.xml"; }
 		};
-		
+
 		translateCommand.Options.Add(projectPath);
 		
 		rootCommand.Subcommands.Add(initCommand);
 		rootCommand.Subcommands.Add(setupCommand);
 		rootCommand.Subcommands.Add(translateCommand);
-		
+
 		ParseResult parseResult = rootCommand.Parse(args);
 		return parseResult.Invoke();
 	}
@@ -79,6 +79,12 @@ public class Program
 	
 	public static void SetupAction(ParseResult result)
 	{
+		if (File.Exists("./cstojs_options.xml"))
+		{
+			Log.ErrorLine($"'cstojs_options.xml' already exists!");
+			return;
+		}
+		
 		string folder = result.GetRequiredValue<string>("folder");
 
 		Log.InfoLine("Running: 'dotnet new console -f net10.0'");
@@ -168,6 +174,7 @@ public class Program
 		string? KeepBraceOnTheSameLine = null;
 		string? NormalizeWhitespace = null;
 		string? TranslateFile = null;
+		string? MakePropertiesEnumerable = null;
 		
 		string? CustomCSNamesToJS = null;
 		string? AddSBAtTheTop = null;
@@ -186,16 +193,18 @@ public class Program
 							if (reader.Name == "Output")
 							{
 								string? _output = reader.GetAttribute("Folder");
+
 								if (_output == null)
 								{
 									Log.ErrorLine("Folder attribute is null!");
 									return;
 								}
+
 								if (Path.IsPathRooted(_output))
 								{
 									if (!Directory.Exists(Path.GetFullPath(_output)))
 									{
-										Log.ErrorLine($"Directory does not exists: {Path.Combine(directoryPath, _output)}");
+										Log.ErrorLine($"Directory does not exists: {_output}");
 										return;
 									}
 									outputPath = Path.GetFullPath(_output);
@@ -215,20 +224,37 @@ public class Program
 							if (reader.Name == "File")
 							{
 								string? _source = reader.GetAttribute("Source");
+								string _fileName = string.Empty;
+
 								if (_source == null)
 								{
 									Log.ErrorLine("Source attribute is null!");
 									return;
 								}
-								if (!File.Exists(Path.Combine(directoryPath, _source)))
+
+
+								if (Path.IsPathRooted(_source))
 								{
-									Log.ErrorLine($"File does not exists: {Path.Combine(directoryPath, _source)}");
-									return;
+									if (!File.Exists(_source))
+									{
+										Log.ErrorLine($"File does not exists: {_source}");
+										return;
+									}
+									_fileName = Path.GetFileName(_source);
+								}
+								else
+								{
+									if (!File.Exists(Path.Combine(directoryPath, _source)))
+									{
+										Log.ErrorLine($"File does not exists: {Path.Combine(directoryPath, _source)}");
+										return;
+									}
+									_fileName = Path.GetFileName(Path.Combine(directoryPath, _source));
 								}
 
 								currentFile = new()
 								{
-									PathID = _source.Replace(".cs", ".js"),
+									PathID = _fileName.Replace(".cs", ".js"),
 									SourceStr = File.ReadAllText(Path.Combine(directoryPath, _source))
 								};
 
@@ -248,6 +274,7 @@ public class Program
 								KeepBraceOnTheSameLine = reader.GetAttribute("KeepBraceOnTheSameLine");
 								NormalizeWhitespace = reader.GetAttribute("NormalizeWhitespace");
 								TranslateFile = reader.GetAttribute("TranslateFile");
+								MakePropertiesEnumerable = reader.GetAttribute("MakePropertiesEnumerable");
 
 								CustomCSNamesToJS = reader.GetAttribute("CustomCSNamesToJS");
 								AddSBAtTheTop = reader.GetAttribute("AddSBAtTheTop");
@@ -299,6 +326,14 @@ public class Program
 										defaultOptions.TranslateFile = bool.Parse(TranslateFile);
 									else
 										currentFile.OptionsForFile.TranslateFile = bool.Parse(TranslateFile);
+									break;
+								}
+								if (MakePropertiesEnumerable != null)
+								{
+									if (currentFile == null)
+										defaultOptions.MakePropertiesEnumerable = bool.Parse(MakePropertiesEnumerable);
+									else
+										currentFile.OptionsForFile.MakePropertiesEnumerable = bool.Parse(MakePropertiesEnumerable);
 									break;
 								}
 
@@ -360,6 +395,7 @@ public class Program
 								{
 									string _name = reader.Name;
 									string _value = reader.Value;
+
 									Log.ErrorLine($"Unknown attribute! Attribute name: '{_name}' Attribute value: '{_value}'");
 								}
 								return;
@@ -369,6 +405,7 @@ public class Program
 					case XmlNodeType.EndElement:
 						{
 							//Log.WriteLine($"End Element {reader.Name}");
+							
 							if (reader.Name == "File")
 								currentFile = null;
 							break;
@@ -380,6 +417,12 @@ public class Program
 			}
 		}
 
+		if (files.Count == 0)
+		{
+			Log.ErrorLine("No files specified in 'cstojs_options.xml'.");
+			return;
+		}
+		
 		FileData[] translatedFiles = CSTOJS.Translate(files.ToArray());
 
 		for (int i = 0; i < translatedFiles.Length; i++)
@@ -387,7 +430,11 @@ public class Program
 			pathCombined = Path.Combine(outputPath, translatedFiles[i].PathID);
 			await File.WriteAllTextAsync(pathCombined, translatedFiles[i].TranslatedStr);
 		}
-		
-		Log.InfoLine($"--- Done: {Path.GetFullPath(outputPath)}");
+
+		Log.InfoLine($"--- Directory: {Path.GetFullPath(outputPath)}");
+		for (int i = 0; i < translatedFiles.Length; i++)
+		{
+			Log.InfoLine($"--- --- File: {translatedFiles[i].PathID}");
+		}
 	}
 }
