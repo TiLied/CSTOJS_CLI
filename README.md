@@ -93,13 +93,14 @@ dotnet tool uninstall --global TiLied.CSTOJS_CLI
 - [Hello world](https://tilied.github.io/CSTOJS_Pages/tutorials/hello-world.html#hello-world)
 - [Simple todo](https://tilied.github.io/CSTOJS_Pages/tutorials/simple-todo.html)
 
-[More on a website](https://tilied.github.io/CSTOJS_Pages/tutorials/hello-world.html)
+[More on the website](https://tilied.github.io/CSTOJS_Pages/tutorials/hello-world.html)
 
 ## Commands
 Run subcommands with `-h` to get more information.
 ```
+init <folder>   Create a barebone 'cstojs_options.xml', without running the dotnet commands.
 setup <folder>  Setup cstojs project.
-translate       Translate specified files in 'cstojs_options.xml'.
+translate       Translate specified files in the 'cstojs_options.xml'.
 ```
 
 ## Related Repository 
