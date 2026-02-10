@@ -7,6 +7,8 @@ using System.Diagnostics;
 using System.Xml;
 using System.Text;
 using CSharpToJavaScript.Utils;
+using System;
+using System.Threading;
 
 namespace CSTOJS_CLI;
 
@@ -29,9 +31,6 @@ public class Program
 		setupCommand.Arguments.Add(outputArgument);
 		setupCommand.SetAction(SetupAction);
 
-		Command translateCommand = new("translate", "Translate specified files in the 'cstojs_options.xml'.");
-		translateCommand.SetAction(TranslateAction);
-
 		Option<string> projectPath = new("--project", "-p")
 		{
 			HelpName = "path",
@@ -39,16 +38,40 @@ public class Program
 			DefaultValueFactory = (r) => { return "./cstojs_options.xml"; }
 		};
 
+		Command translateCommand = new("translate", "Translate specified files in the 'cstojs_options.xml'.");
+		translateCommand.SetAction(TranslateAction);
 		translateCommand.Options.Add(projectPath);
+
+		Option<int> delayWatch = new("--delay", "-d")
+		{
+			HelpName = "ms",
+			Description = "Delay watching the files again by milliseconds. (1000-10000)",
+			DefaultValueFactory = (r) => { return 3000; },
+			Validators =
+			{
+				(result) =>
+				{
+					if (result.GetValue<int>("--delay") < 1000)
+						result.AddError("Must be greater than 1000 ms.");
+					else if (result.GetValue<int>("--delay") > 10000)
+						result.AddError("Must be smaller than 10000 ms.");
+				} 
+			}
+		};
+		
+		Command watchCommand = new("watch", "Watches specified files in the 'cstojs_options.xml' with an interval and translates them. Note: The 'cstojs_options.xml' file is not being monitored, so any changes require the command to be restarted.");
+		watchCommand.SetAction(WatchAction);
+		watchCommand.Options.Add(projectPath);
+		watchCommand.Options.Add(delayWatch);
 		
 		rootCommand.Subcommands.Add(initCommand);
 		rootCommand.Subcommands.Add(setupCommand);
 		rootCommand.Subcommands.Add(translateCommand);
+		rootCommand.Subcommands.Add(watchCommand);
 
 		ParseResult parseResult = rootCommand.Parse(args);
 		return parseResult.Invoke();
 	}
-
 	public static void InitAction(ParseResult result)
 	{
 		if (File.Exists("./cstojs_options.xml"))
@@ -56,7 +79,7 @@ public class Program
 			Log.ErrorLine($"'cstojs_options.xml' already exists!");
 			return;
 		}
-		
+
 		string folder = result.GetRequiredValue<string>("folder");
 
 		Log.InfoLine($"Creating an output folder: '{Path.GetFullPath(folder)}'");
@@ -76,7 +99,6 @@ public class Program
 
 		Log.InfoLine($"Init ended!");
 	}
-	
 	public static void SetupAction(ParseResult result)
 	{
 		if (File.Exists("./cstojs_options.xml"))
@@ -84,7 +106,7 @@ public class Program
 			Log.ErrorLine($"'cstojs_options.xml' already exists!");
 			return;
 		}
-		
+
 		string folder = result.GetRequiredValue<string>("folder");
 
 		Log.InfoLine("Running: 'dotnet new console -f net10.0'");
@@ -132,41 +154,24 @@ public class Program
 
 		Log.InfoLine($"Setup ended! Try running 'cstojs-cli translate'");
 	}
-
-	public static async Task TranslateAction(ParseResult result)
+	private static XMLData ReadXML(ParseResult result)
 	{
-		/* TODO?
-		Assembly assembly = Assembly.LoadFile("../../CSharpToJavaScript/bin/Debug/net10.0/CSharpToJavaScript.dll");
-		var cstojsClass = assembly.GetType("CSharpToJavaScript.CSTOJS");
-		var fileData = assembly.GetType("CSharpToJavaScript.FileData");
-		
-		dynamic fileDataInst = assembly.CreateInstance("CSharpToJavaScript.FileData", false,
-			BindingFlags.ExactBinding,
-			null, null, null, null);
-		fileDataInst.SourceStr = "Console.WriteLine();";
+		XMLData data = new();
 
-		MethodInfo m = cstojsClass.GetMethod("Translate");
-		dynamic ret = m.Invoke(null, new dynamic[] { new dynamic[] { fileDataInst }, null });
-		Log.WriteLine($"SampleMethod returned {ret[0].TranslatedStr}.");
-		*/
 		string projectPath = result.GetValue<string>("--project") ?? "./cstojs_options.xml";
 		if (!File.Exists(projectPath))
 		{
 			Log.ErrorLine($"File 'cstojs_options.xml' does not exists: {projectPath}");
-			return;
+			data.Error = true;
+			return data;
 		}
 		string directoryPath = Path.GetDirectoryName(Path.GetFullPath(projectPath)) ?? "./";
-		
 		CSTOJSOptions defaultOptions = new();
 
-		FileData? currentFile = null;
-
-		string outputPath = string.Empty;
-
-		List<FileData> files = new();
+		FileData2? currentFile = null;
 
 		string pathCombined = string.Empty;
-		
+
 		//CSTOJS Options:
 		string? Debug = null;
 		string? DisableCompilationErrors = null;
@@ -175,7 +180,7 @@ public class Program
 		string? NormalizeWhitespace = null;
 		string? TranslateFile = null;
 		string? MakePropertiesEnumerable = null;
-		
+
 		string? CustomCSNamesToJS = null;
 		string? AddSBAtTheTop = null;
 		string? AddSBAtTheBottom = null;
@@ -197,7 +202,8 @@ public class Program
 								if (_output == null)
 								{
 									Log.ErrorLine("Folder attribute is null!");
-									return;
+									data.Error = true;
+									return data;
 								}
 
 								if (Path.IsPathRooted(_output))
@@ -205,31 +211,37 @@ public class Program
 									if (!Directory.Exists(Path.GetFullPath(_output)))
 									{
 										Log.ErrorLine($"Directory does not exists: {_output}");
-										return;
+										data.Error = true;
+										return data;
 									}
-									outputPath = Path.GetFullPath(_output);
+									data.OutputPath = Path.GetFullPath(_output);
 								}
 								else
 								{
 									if (!Directory.Exists(Path.Combine(directoryPath, _output)))
 									{
 										Log.ErrorLine($"Directory does not exists: {Path.Combine(directoryPath, _output)}");
-										return;
+										data.Error = true;
+										return data;
 									}
 
-									outputPath = Path.Combine(directoryPath, _output);
+									data.OutputPath = Path.Combine(directoryPath, _output);
 								}
 								break;
 							}
 							if (reader.Name == "File")
 							{
 								string? _source = reader.GetAttribute("Source");
-								string _fileName = string.Empty;
+
+								string _sourceFileName = string.Empty;
+								string _sourceStr = string.Empty;
+								string _sourceFilePath = string.Empty;
 
 								if (_source == null)
 								{
 									Log.ErrorLine("Source attribute is null!");
-									return;
+									data.Error = true;
+									return data;
 								}
 
 
@@ -238,24 +250,31 @@ public class Program
 									if (!File.Exists(_source))
 									{
 										Log.ErrorLine($"File does not exists: {_source}");
-										return;
+										data.Error = true;
+										return data;
 									}
-									_fileName = Path.GetFileName(_source);
+									_sourceFileName = Path.GetFileName(_source);
+									_sourceStr = File.ReadAllText(_source);
+									_sourceFilePath = _source;
 								}
 								else
 								{
 									if (!File.Exists(Path.Combine(directoryPath, _source)))
 									{
 										Log.ErrorLine($"File does not exists: {Path.Combine(directoryPath, _source)}");
-										return;
+										data.Error = true;
+										return data;
 									}
-									_fileName = Path.GetFileName(Path.Combine(directoryPath, _source));
+									_sourceFileName = Path.GetFileName(Path.Combine(directoryPath, _source));
+									_sourceStr = File.ReadAllText(Path.Combine(directoryPath, _source));
+									_sourceFilePath = Path.Combine(directoryPath, _source);
 								}
 
 								currentFile = new()
 								{
-									PathID = _fileName.Replace(".cs", ".js"),
-									SourceStr = File.ReadAllText(Path.Combine(directoryPath, _source))
+									JSFileName = _sourceFileName.Replace(".cs", ".js"),
+									SourceStr = _sourceStr,
+									SourceFilePath = _sourceFilePath
 								};
 
 								if (reader.IsEmptyElement)
@@ -263,7 +282,7 @@ public class Program
 								else
 									currentFile.OptionsForFile = new();
 
-								files.Add(currentFile);
+								data.Files.Add(currentFile);
 								break;
 							}
 							if (reader.Name == "Option")
@@ -398,14 +417,15 @@ public class Program
 
 									Log.ErrorLine($"Unknown attribute! Attribute name: '{_name}' Attribute value: '{_value}'");
 								}
-								return;
+								data.Error = true;
+								return data;
 							}
 							break;
 						}
 					case XmlNodeType.EndElement:
 						{
 							//Log.WriteLine($"End Element {reader.Name}");
-							
+
 							if (reader.Name == "File")
 								currentFile = null;
 							break;
@@ -417,24 +437,101 @@ public class Program
 			}
 		}
 
-		if (files.Count == 0)
+		return data;
+	}
+	public static async Task TranslateAction(ParseResult result)
+	{
+		XMLData data = ReadXML(result);
+		if (data.Error)
+			return;
+		if (data.Files.Count == 0)
 		{
 			Log.ErrorLine("No files specified in 'cstojs_options.xml'.");
 			return;
 		}
-		
-		FileData[] translatedFiles = CSTOJS.Translate(files.ToArray());
+
+		FileData2[] translatedFiles = (FileData2[])CSTOJS.Translate(data.Files.ToArray());
 
 		for (int i = 0; i < translatedFiles.Length; i++)
 		{
-			pathCombined = Path.Combine(outputPath, translatedFiles[i].PathID);
+			string pathCombined = Path.Combine(data.OutputPath, translatedFiles[i].JSFileName);
 			await File.WriteAllTextAsync(pathCombined, translatedFiles[i].TranslatedStr);
 		}
 
-		Log.InfoLine($"--- Directory: {Path.GetFullPath(outputPath)}");
+		Log.InfoLine($"--- Directory: {Path.GetFullPath(data.OutputPath)}");
 		for (int i = 0; i < translatedFiles.Length; i++)
 		{
-			Log.InfoLine($"--- --- File: {translatedFiles[i].PathID}");
+			Log.InfoLine($"--- --- File: {translatedFiles[i].JSFileName}");
 		}
 	}
+	public static bool RunWatch = true;
+	public static async Task WatchAction(ParseResult result)
+	{
+		XMLData data = ReadXML(result);
+		if (data.Error)
+			return;
+		if (data.Files.Count == 0)
+		{
+			Log.ErrorLine("No files specified in 'cstojs_options.xml'.");
+			return;
+		}
+
+		Log.InfoLine("Press ctrl+c to end watching.");
+
+		Dictionary<string, DateTime> dateTimes = new();
+		for (int i = 0; i < data.Files.Count; i++)
+		{
+			dateTimes.Add(data.Files[i].SourceFilePath, DateTime.UtcNow);
+		}
+		
+		int delay = result.GetValue<int>("--delay");
+		
+		while (RunWatch)
+		{
+			for (int i = 0; i < data.Files.Count; i++)
+			{
+				DateTime time = File.GetLastWriteTimeUtc(data.Files[i].SourceFilePath);
+				if (time > dateTimes[data.Files[i].SourceFilePath])
+				{
+					try
+					{
+						data.Files[i].SourceStr = File.ReadAllText(data.Files[i].SourceFilePath);
+
+						FileData2 translatedFile = (FileData2)CSTOJS.Translate(data.Files[i]);
+
+						string pathCombined = Path.Combine(data.OutputPath, translatedFile.JSFileName);
+						await File.WriteAllTextAsync(pathCombined, translatedFile.TranslatedStr);
+
+						Log.InfoLine($"--- Directory: {Path.GetFullPath(data.OutputPath)}");
+						Log.InfoLine($"--- --- File: {translatedFile.JSFileName}");
+
+						dateTimes[data.Files[i].SourceFilePath] = time;
+					}
+					catch (Exception e)
+					{
+						RunWatch = false;
+						Log.ErrorLine(e.ToString());
+						break;
+					}
+				}
+			}
+			
+			Thread.Sleep(delay);
+		}
+	}
+}
+
+public class XMLData
+{
+	public List<FileData2> Files { get; set; } = new();
+	public string OutputPath { get; set; } = string.Empty;
+	public bool Error = false;
+
+	public XMLData() { }
+
+}
+public class FileData2 : FileData
+{
+	public string JSFileName = string.Empty;
+	public string SourceFilePath = string.Empty;
 }
