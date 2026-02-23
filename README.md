@@ -101,6 +101,8 @@ Run subcommands with `-h` to get more information.
 init <folder>   Create a barebone 'cstojs_options.xml', without running the dotnet commands.
 setup <folder>  Setup cstojs project.
 translate       Translate specified files in the 'cstojs_options.xml'.
+watch           Watches specified files in the 'cstojs_options.xml' with an interval and translates them. Note: The
+                  'cstojs_options.xml' file is not being monitored, so any changes require the command to be restarted.
 ```
 
 ## Related Repository 
