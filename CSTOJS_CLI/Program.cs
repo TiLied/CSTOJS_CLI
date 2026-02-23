@@ -14,6 +14,8 @@ namespace CSTOJS_CLI;
 
 public class Program
 {
+	public static bool RunWatch = true;
+
 	private static int Main(string[] args)
 	{
 		RootCommand rootCommand = new("Dotnet tool/cli for a CSharpToJavaScript library.");
@@ -55,15 +57,15 @@ public class Program
 						result.AddError("Must be greater than 1000 ms.");
 					else if (result.GetValue<int>("--delay") > 10000)
 						result.AddError("Must be smaller than 10000 ms.");
-				} 
+				}
 			}
 		};
-		
+
 		Command watchCommand = new("watch", "Watches specified files in the 'cstojs_options.xml' with an interval and translates them. Note: The 'cstojs_options.xml' file is not being monitored, so any changes require the command to be restarted.");
 		watchCommand.SetAction(WatchAction);
 		watchCommand.Options.Add(projectPath);
 		watchCommand.Options.Add(delayWatch);
-		
+
 		rootCommand.Subcommands.Add(initCommand);
 		rootCommand.Subcommands.Add(setupCommand);
 		rootCommand.Subcommands.Add(translateCommand);
@@ -72,6 +74,7 @@ public class Program
 		ParseResult parseResult = rootCommand.Parse(args);
 		return parseResult.Invoke();
 	}
+	
 	public static void InitAction(ParseResult result)
 	{
 		if (File.Exists("./cstojs_options.xml"))
@@ -154,6 +157,7 @@ public class Program
 
 		Log.InfoLine($"Setup ended! Try running 'cstojs-cli translate'");
 	}
+
 	private static XMLData ReadXML(ParseResult result)
 	{
 		XMLData data = new();
@@ -439,6 +443,7 @@ public class Program
 
 		return data;
 	}
+	
 	public static async Task TranslateAction(ParseResult result)
 	{
 		XMLData data = ReadXML(result);
@@ -464,7 +469,6 @@ public class Program
 			Log.InfoLine($"--- --- File: {translatedFiles[i].JSFileName}");
 		}
 	}
-	public static bool RunWatch = true;
 	public static async Task WatchAction(ParseResult result)
 	{
 		XMLData data = ReadXML(result);
