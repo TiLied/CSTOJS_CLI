@@ -1,12 +1,10 @@
-//#!/usr/local/share/dotnet/dotnet run
+#!/usr/bin/dotnet run
 //dotnet run --file ./MakeBinaries.cs
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.IO.Compression;
 
+//runtime, self-contained
 List<Tuple<string, string>> archs = new();
 archs.Add(new("any", "false"));
 
@@ -37,7 +35,9 @@ ProcessStartInfo startInfo = new()
 for (int i = 0; i < archs.Count; i++)
 {
 	Console.WriteLine($"Running: 'dotnet build for: {archs[i].Item1}'");
+
 	startInfo.Arguments = $"build --configuration Release --property:OutputPath=./bin/binaries/CSTOJS_CLI-{archs[i].Item1}/ --runtime {archs[i].Item1} --self-contained {archs[i].Item2}";
+	
 	Process proc = new() { StartInfo = startInfo };
 	proc.Start();
 	Console.WriteLine(proc.StandardOutput.ReadToEnd());
@@ -46,9 +46,8 @@ for (int i = 0; i < archs.Count; i++)
 }
 
 if (!Path.Exists("./bin/zip/"))
-{
 	Directory.CreateDirectory("./bin/zip/");
-}
+
 for (int i = 0; i < archs.Count; i++)
 {
 	string _directoryName = $"CSTOJS_CLI-{archs[i].Item1}";
