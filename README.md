@@ -1,7 +1,9 @@
 # CSTOJS_CLI
 [Dotnet tool](https://www.nuget.org/packages/TiLied.CSTOJS_CLI/) | [Core library](https://github.com/TiLied/CSharpToJavaScript) | [Website](https://tilied.github.io/CSTOJS_Pages/) | [Try it online!](https://tilied.github.io/CSTOJS_Pages/BWA/)
 
-This dotnet tool/CLI is a "front-end" that implements a "core" library [CSharpToJavaScript](https://github.com/TiLied/CSharpToJavaScript) translator, converter, transpiler, transcompiler, compiler, source-to-source compiler, you name it. CLI inspired (a little) by Meson, but it should behave like the dotnet cli and tsc cli.
+This dotnet tool/CLI is a "front-end" that implements a "core" library [CSharpToJavaScript](https://github.com/TiLied/CSharpToJavaScript) translator, converter, transpiler, transcompiler, compiler, or source-to-source compiler, you name it. 
+
+The CLI was inspired (a little) by Meson, but should behave more or less like the dotnet cli or tsc cli.
 
 ## Quick start
 ### To install:
@@ -19,7 +21,7 @@ cstojs-cli translate
 ```csharp
 dotnet tool update --global TiLied.CSTOJS_CLI
 ```
-### To delete:
+### To uninstall:
 ```csharp
 dotnet tool uninstall --global TiLied.CSTOJS_CLI
 ```
@@ -48,7 +50,7 @@ cstojs-cli setup "Output"
 - Program.cs
 - Test.csproj
 ```
-- - "Output" folder is where the translated JS files will be.
+- - The "Output" folder is where the translated JS files will be.
 - - "cstojs_options.xml" is project options, see below for an example.
 - To translate "Program.cs", run:
 ```csharp
@@ -60,7 +62,7 @@ cstojs-cli translate
 ```csharp
 dotnet tool update --global TiLied.CSTOJS_CLI
 ```
-- To delete, run:
+- To uninstall, run:
 ```csharp
 dotnet tool uninstall --global TiLied.CSTOJS_CLI
 ```
@@ -68,21 +70,19 @@ dotnet tool uninstall --global TiLied.CSTOJS_CLI
 ## cstojs_options.xml
 ```xml
 <ProjectOptions>
-  <!-- This is specifying an output folder for a js files. This example is "Output". -->
+  <!-- This specifies an output folder for js files. This example is "Output". -->
   <Output Folder="Output" />
 
-  <!-- This is a default options which will be applied for every file that follows. -->
-  <DefaultOptions>
-    <!-- This is a "NormalizeWhitespace" option. See all available options at https://github.com/TiLied/CSharpToJavaScript/blob/master/CSharpToJavaScript/CSTOJSOptions.cs -->
-    <Option NormalizeWhitespace="true" />
-  </DefaultOptions>
+  <!-- This is the default option which will be applied to every file that follows. -->
+  <!-- See all available options at https://github.com/TiLied/CSharpToJavaScript/blob/master/CSharpToJavaScript/CSTOJSOptions.cs -->
+  <Option NormalizeWhitespace="true" />
 
   <!-- This is a file that will be translated to js. -->
   <File Source="./Program.cs" />
 
   <!-- This is a file that will be translated to js with overridden options. -->
   <File Source="./Test.cs">
-     <!-- This is a "Debug" option applying to only this file. -->
+     <!-- This is the "Debug" option, applying only to this file. -->
     <Option Debug="true" />
   </File>
 
@@ -92,6 +92,7 @@ dotnet tool uninstall --global TiLied.CSTOJS_CLI
 ## Tutorials/Examples
 - [Hello world](https://tilied.github.io/CSTOJS_Pages/tutorials/hello-world.html#hello-world)
 - [Simple todo](https://tilied.github.io/CSTOJS_Pages/tutorials/simple-todo.html)
+- [Simple module](https://tilied.github.io/CSTOJS_Pages/tutorials/simple-module.html)
 
 [More on the website](https://tilied.github.io/CSTOJS_Pages/tutorials/hello-world.html)
 
@@ -101,13 +102,12 @@ Run subcommands with `-h` to get more information.
 init <folder>   Create a barebone 'cstojs_options.xml', without running the dotnet commands.
 setup <folder>  Setup cstojs project.
 translate       Translate specified files in the 'cstojs_options.xml'.
-watch           Watches specified files in the 'cstojs_options.xml' with an interval and translates them. Note: The
-                  'cstojs_options.xml' file is not being monitored, so any changes require the command to be restarted.
+watch           Watches specified files in the 'cstojs_options.xml' with an interval and translates them. Note: The 'cstojs_options.xml' file is not being monitored, so any changes require the command to be restarted.
 ```
 
 ## Related Repository 
 - Core library: https://github.com/TiLied/CSharpToJavaScript
 - Tests: https://github.com/TiLied/CSTOJS_Tests
-- Library for generating various stuff: https://github.com/TiLied/CSTOJS_GenLib
+- Library for generating various things: https://github.com/TiLied/CSTOJS_GenLib
 - Website/documentation: https://github.com/TiLied/CSTOJS_Pages
 - Blazor WebAssembly app: https://github.com/TiLied/CSTOJS_BWA
