@@ -176,15 +176,20 @@ public class Program
 
 		string pathCombined = string.Empty;
 
+		string? DisableConsoleOutput = null;
+		
 		//CSTOJS Options:
 		string? Debug = null;
-		string? DisableCompilationErrors = null;
+		string? DisableDiagnostics = null;
 		string? UseVarOverLet = null;
 		string? KeepBraceOnTheSameLine = null;
 		string? NormalizeWhitespace = null;
 		string? TranslateFile = null;
 		string? MakePropertiesEnumerable = null;
 
+		string? EnableModules = null;
+
+		string? CustomPathToDLLs = null;
 		string? CustomCSNamesToJS = null;
 		string? AddSBAtTheTop = null;
 		string? AddSBAtTheBottom = null;
@@ -276,7 +281,7 @@ public class Program
 
 								currentFile = new()
 								{
-									JSFileName = _sourceFileName.Replace(".cs", ".js"),
+									FileName = _sourceFileName.Replace(".cs", ".js"),
 									SourceStr = _sourceStr,
 									SourceFilePath = _sourceFilePath
 								};
@@ -291,18 +296,29 @@ public class Program
 							}
 							if (reader.Name == "Option")
 							{
+								DisableConsoleOutput = reader.GetAttribute("DisableConsoleOutput");
+								
 								Debug = reader.GetAttribute("Debug");
-								DisableCompilationErrors = reader.GetAttribute("DisableCompilationErrors");
+								DisableDiagnostics = reader.GetAttribute("DisableDiagnostics");
 								UseVarOverLet = reader.GetAttribute("UseVarOverLet");
 								KeepBraceOnTheSameLine = reader.GetAttribute("KeepBraceOnTheSameLine");
 								NormalizeWhitespace = reader.GetAttribute("NormalizeWhitespace");
 								TranslateFile = reader.GetAttribute("TranslateFile");
 								MakePropertiesEnumerable = reader.GetAttribute("MakePropertiesEnumerable");
 
+								EnableModules = reader.GetAttribute("EnableModules");
+
+								CustomPathToDLLs = reader.GetAttribute("CustomPathToDLLs");
 								CustomCSNamesToJS = reader.GetAttribute("CustomCSNamesToJS");
 								AddSBAtTheTop = reader.GetAttribute("AddSBAtTheTop");
 								AddSBAtTheBottom = reader.GetAttribute("AddSBAtTheBottom");
 
+								if (DisableConsoleOutput != null)
+								{
+									Log.DisableConsoleOutput = bool.Parse(DisableConsoleOutput);
+									break;
+								}
+								
 								if (Debug != null)
 								{
 									if (currentFile == null)
@@ -311,12 +327,12 @@ public class Program
 										currentFile.OptionsForFile.Debug = bool.Parse(Debug);
 									break;
 								}
-								if (DisableCompilationErrors != null)
+								if (DisableDiagnostics != null)
 								{
 									if (currentFile == null)
-										defaultOptions.DisableCompilationErrors = bool.Parse(DisableCompilationErrors);
+										defaultOptions.DisableDiagnostics = bool.Parse(DisableDiagnostics);
 									else
-										currentFile.OptionsForFile.DisableCompilationErrors = bool.Parse(DisableCompilationErrors);
+										currentFile.OptionsForFile.DisableDiagnostics = bool.Parse(DisableDiagnostics);
 									break;
 								}
 								if (UseVarOverLet != null)
@@ -360,6 +376,23 @@ public class Program
 									break;
 								}
 
+								if (EnableModules != null)
+								{
+									if (currentFile == null)
+										defaultOptions.EnableModules = byte.Parse(EnableModules);
+									else
+										currentFile.OptionsForFile.EnableModules = byte.Parse(EnableModules);
+									break;
+								}
+
+								if (CustomPathToDLLs != null)
+								{
+									if (currentFile == null)
+										defaultOptions.CustomPathToDLLs = CustomPathToDLLs;
+									else
+										currentFile.OptionsForFile.CustomPathToDLLs = CustomPathToDLLs;
+									break;
+								}
 								if (CustomCSNamesToJS != null)
 								{
 									Dictionary<string, string> _customCSNamesToJSList = new();
@@ -459,14 +492,20 @@ public class Program
 
 		for (int i = 0; i < translatedFiles.Length; i++)
 		{
-			string pathCombined = Path.Combine(data.OutputPath, translatedFiles[i].JSFileName);
+			string pathCombined = Path.Combine(data.OutputPath, translatedFiles[i].FileName);
 			await File.WriteAllTextAsync(pathCombined, translatedFiles[i].TranslatedStr);
+			
+			if (translatedFiles[i].OptionsForFile.Debug)
+			{
+				await File.WriteAllTextAsync(pathCombined + ".1.cstojs", translatedFiles[i].Debug_WithSemanticRewriter);
+				await File.WriteAllTextAsync(pathCombined + ".2.cstojs", translatedFiles[i].Debug_WithoutSemanticRewriter);
+			}
 		}
 
 		Log.InfoLine($"--- Directory: {Path.GetFullPath(data.OutputPath)}");
 		for (int i = 0; i < translatedFiles.Length; i++)
 		{
-			Log.InfoLine($"--- --- File: {translatedFiles[i].JSFileName}");
+			Log.InfoLine($"--- --- File: {translatedFiles[i].FileName}");
 		}
 	}
 	public static async Task WatchAction(ParseResult result)
@@ -503,11 +542,11 @@ public class Program
 
 						FileData2 translatedFile = (FileData2)CSTOJS.Translate(data.Files[i]);
 
-						string pathCombined = Path.Combine(data.OutputPath, translatedFile.JSFileName);
+						string pathCombined = Path.Combine(data.OutputPath, translatedFile.FileName);
 						await File.WriteAllTextAsync(pathCombined, translatedFile.TranslatedStr);
 
 						Log.InfoLine($"--- Directory: {Path.GetFullPath(data.OutputPath)}");
-						Log.InfoLine($"--- --- File: {translatedFile.JSFileName}");
+						Log.InfoLine($"--- --- File: {translatedFile.FileName}");
 
 						dateTimes[data.Files[i].SourceFilePath] = time;
 					}
@@ -536,6 +575,5 @@ public class XMLData
 }
 public class FileData2 : FileData
 {
-	public string JSFileName = string.Empty;
 	public string SourceFilePath = string.Empty;
 }
