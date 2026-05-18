@@ -196,8 +196,6 @@ public class Program
 
 		string pathCombined = string.Empty;
 
-		string? DisableConsoleOutput = null;
-		
 		//CSTOJS Options:
 		string? Debug = null;
 		string? DisableDiagnostics = null;
@@ -316,8 +314,6 @@ public class Program
 							}
 							if (reader.Name == "Option")
 							{
-								DisableConsoleOutput = reader.GetAttribute("DisableConsoleOutput");
-								
 								Debug = reader.GetAttribute("Debug");
 								DisableDiagnostics = reader.GetAttribute("DisableDiagnostics");
 								UseVarOverLet = reader.GetAttribute("UseVarOverLet");
@@ -333,12 +329,6 @@ public class Program
 								AddSBAtTheTop = reader.GetAttribute("AddSBAtTheTop");
 								AddSBAtTheBottom = reader.GetAttribute("AddSBAtTheBottom");
 
-								if (DisableConsoleOutput != null)
-								{
-									Log.DisableConsoleOutput = bool.Parse(DisableConsoleOutput);
-									break;
-								}
-								
 								if (Debug != null)
 								{
 									if (currentFile == null)
