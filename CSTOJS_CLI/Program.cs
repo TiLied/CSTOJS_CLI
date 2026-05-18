@@ -20,6 +20,22 @@ public class Program
 	{
 		RootCommand rootCommand = new("Dotnet tool/cli for a CSharpToJavaScript library.");
 
+		Option<bool> disableConsoleOutput = new("--disable-console-output")
+		{
+			Recursive = true,
+			Description = "Self-explanatory, Disable Console Output.",
+			DefaultValueFactory = (r) => { return false; }
+		};
+		rootCommand.Options.Add(disableConsoleOutput);
+
+		Option<bool> disableConsoleColors = new("--disable-console-colors")
+		{
+			Recursive = true,
+			Description = "Self-explanatory, Disable Console Colors.",
+			DefaultValueFactory = (r) => { return false; }
+		};
+		rootCommand.Options.Add(disableConsoleColors);
+
 		Argument<string> outputArgument = new("folder")
 		{
 			Description = "Output folder. Can be absolute path or relative."
@@ -74,9 +90,11 @@ public class Program
 		ParseResult parseResult = rootCommand.Parse(args);
 		return parseResult.Invoke();
 	}
-	
+
 	public static void InitAction(ParseResult result)
 	{
+		SetupLog(result);
+		
 		if (File.Exists("./cstojs_options.xml"))
 		{
 			Log.ErrorLine($"'cstojs_options.xml' already exists!");
@@ -104,6 +122,8 @@ public class Program
 	}
 	public static void SetupAction(ParseResult result)
 	{
+		SetupLog(result);
+		
 		if (File.Exists("./cstojs_options.xml"))
 		{
 			Log.ErrorLine($"'cstojs_options.xml' already exists!");
@@ -476,9 +496,11 @@ public class Program
 
 		return data;
 	}
-	
+
 	public static async Task TranslateAction(ParseResult result)
 	{
+		SetupLog(result);
+		
 		XMLData data = ReadXML(result);
 		if (data.Error)
 			return;
@@ -510,6 +532,8 @@ public class Program
 	}
 	public static async Task WatchAction(ParseResult result)
 	{
+		SetupLog(result);
+		
 		XMLData data = ReadXML(result);
 		if (data.Error)
 			return;
@@ -526,9 +550,9 @@ public class Program
 		{
 			dateTimes.Add(data.Files[i].SourceFilePath, DateTime.UtcNow);
 		}
-		
+
 		int delay = result.GetValue<int>("--delay");
-		
+
 		while (RunWatch)
 		{
 			for (int i = 0; i < data.Files.Count; i++)
@@ -558,10 +582,17 @@ public class Program
 					}
 				}
 			}
-			
+
 			Thread.Sleep(delay);
 		}
 	}
+
+	private static void SetupLog(ParseResult result)
+	{
+		Log.DisableConsoleColors = result.GetValue<bool>("--disable-console-colors");
+		Log.DisableConsoleOutput = result.GetValue<bool>("--disable-console-output");
+	}
+	
 }
 
 public class XMLData
