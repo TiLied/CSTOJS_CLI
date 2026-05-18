@@ -506,11 +506,13 @@ public class Program
 		{
 			string pathCombined = Path.Combine(data.OutputPath, translatedFiles[i].FileName);
 			await File.WriteAllTextAsync(pathCombined, translatedFiles[i].TranslatedStr);
-			
+
 			if (translatedFiles[i].OptionsForFile.Debug)
 			{
-				await File.WriteAllTextAsync(pathCombined + ".1.cstojs", translatedFiles[i].Debug_WithSemanticRewriter);
-				await File.WriteAllTextAsync(pathCombined + ".2.cstojs", translatedFiles[i].Debug_WithoutSemanticRewriter);
+				for (int j = 0; j < translatedFiles[i].DebugStrings.Length; j++)
+				{
+					await File.WriteAllTextAsync(pathCombined + $".{j}.cstojs", translatedFiles[i].DebugStrings[j]);
+				}
 			}
 		}
 

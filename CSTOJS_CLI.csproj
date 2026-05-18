@@ -12,7 +12,7 @@
     <RepositoryUrl>https://github.com/TiLied/CSTOJS_CLI</RepositoryUrl>
     <Authors>TiLied</Authors>
     <Title>CSTOJS CLI</Title>
-    <Description>Dotnet tool/CLI for C# to JS transpiler.</Description>
+    <Description>Dotnet tool/CLI for a C# to JS transpiler.</Description>
     <ToolCommandName>cstojs-cli</ToolCommandName>
     <PackageId>TiLied.$(AssemblyName)</PackageId>
     <PackageTags>tool, cli, csharp, c#, translation, translator, js, javascript, dotnet-tool, transpiler, converter, transcompiler, compiler, s2s, source-to-source</PackageTags>
@@ -46,8 +46,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CSharpToJavaScript" Version="0.2.1" />
-    <PackageReference Include="System.CommandLine" Version="2.0.7" />
+    <PackageReference Include="CSharpToJavaScript" Version="0.2.2" />
+    <PackageReference Include="System.CommandLine" Version="2.0.8" />
   </ItemGroup>	
 
 </Project>
