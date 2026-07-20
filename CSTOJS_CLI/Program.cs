@@ -41,18 +41,18 @@ public class Program
 			Description = "Output folder. Can be absolute path or relative."
 		};
 
-		Command initCommand = new("init", "Create a barebone 'cstojs_options.xml', without running the dotnet commands.");
+		Command initCommand = new("init", "Create a barebone 'cstojs_options.xml' in the current directory, without running the dotnet commands.");
 		initCommand.Arguments.Add(outputArgument);
 		initCommand.SetAction(InitAction);
 
-		Command setupCommand = new("setup", "Setup cstojs project.");
+		Command setupCommand = new("setup", "Setup cstojs project in the current directory.");
 		setupCommand.Arguments.Add(outputArgument);
 		setupCommand.SetAction(SetupAction);
 
 		Option<string> projectPath = new("--project", "-p")
 		{
 			HelpName = "path",
-			Description = "Path to the 'cstojs_options.xml'.",
+			Description = "Path to the 'cstojs_options.xml'. Note: The name of the file can be anything as long as the file ends with xml and follows structure `<ProjectOptionx>...</ProjectOptions>`.",
 			DefaultValueFactory = (r) => { return "./cstojs_options.xml"; }
 		};
 
@@ -202,9 +202,11 @@ public class Program
 		string? UseVarOverLet = null;
 		string? KeepBraceOnTheSameLine = null;
 		string? NormalizeWhitespace = null;
-		string? TranslateFile = null;
 		string? MakePropertiesEnumerable = null;
-
+		
+		string? TranslateFile = null;
+		string? ProcessNameOfExpression = null;
+		
 		string? EnableModules = null;
 
 		string? CustomPathToDLLs = null;
@@ -319,9 +321,11 @@ public class Program
 								UseVarOverLet = reader.GetAttribute("UseVarOverLet");
 								KeepBraceOnTheSameLine = reader.GetAttribute("KeepBraceOnTheSameLine");
 								NormalizeWhitespace = reader.GetAttribute("NormalizeWhitespace");
-								TranslateFile = reader.GetAttribute("TranslateFile");
 								MakePropertiesEnumerable = reader.GetAttribute("MakePropertiesEnumerable");
 
+								TranslateFile = reader.GetAttribute("TranslateFile");
+								ProcessNameOfExpression = reader.GetAttribute("ProcessNameOfExpression");
+								
 								EnableModules = reader.GetAttribute("EnableModules");
 
 								CustomPathToDLLs = reader.GetAttribute("CustomPathToDLLs");
@@ -369,14 +373,6 @@ public class Program
 										currentFile.OptionsForFile.NormalizeWhitespace = bool.Parse(NormalizeWhitespace);
 									break;
 								}
-								if (TranslateFile != null)
-								{
-									if (currentFile == null)
-										defaultOptions.TranslateFile = bool.Parse(TranslateFile);
-									else
-										currentFile.OptionsForFile.TranslateFile = bool.Parse(TranslateFile);
-									break;
-								}
 								if (MakePropertiesEnumerable != null)
 								{
 									if (currentFile == null)
@@ -386,6 +382,23 @@ public class Program
 									break;
 								}
 
+								if (TranslateFile != null)
+								{
+									if (currentFile == null)
+										defaultOptions.TranslateFile = bool.Parse(TranslateFile);
+									else
+										currentFile.OptionsForFile.TranslateFile = bool.Parse(TranslateFile);
+									break;
+								}
+								if (ProcessNameOfExpression != null)
+								{
+									if (currentFile == null)
+										defaultOptions.ProcessNameOfExpression = bool.Parse(ProcessNameOfExpression);
+									else
+										currentFile.OptionsForFile.ProcessNameOfExpression = bool.Parse(ProcessNameOfExpression);
+									break;
+								}
+								
 								if (EnableModules != null)
 								{
 									if (currentFile == null)
