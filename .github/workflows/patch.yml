@@ -1,0 +1,87 @@
+name: patch
+
+on: 
+  workflow_dispatch:
+
+jobs:
+  setup-outputs:
+    runs-on: ubuntu-latest
+    
+    outputs:
+      currentTag: ${{ steps.step1.outputs.currentTag }}
+      commitCount: ${{ steps.step2.outputs.commitCount }}
+    
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: step1
+        run: echo "currentTag=`echo $(git describe --tags --abbrev=0)`" >> $GITHUB_OUTPUT
+      - id: step2
+        run: echo "commitCount=`echo $(git rev-list --count ${{steps.step1.outputs.currentTag}}..master)`" >> $GITHUB_OUTPUT
+        
+      - name: Outputs
+        run: |
+          echo "currentTag: ${{steps.step1.outputs.currentTag}}"
+          echo "commitCount: ${{steps.step2.outputs.commitCount}}"
+  make-patch:
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+      
+    needs: setup-outputs
+    
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: step1
+        run: echo "newTag=`echo $(echo ${{needs.setup-outputs.outputs.currentTag}} | awk 'BEGIN{FS=OFS="."} {$3+=1} 1')`" >> $GITHUB_ENV
+      - name: Edit csproj
+        run: sed -i 's+<VersionPrefix>${{needs.setup-outputs.outputs.currentTag}}</VersionPrefix>+<VersionPrefix>${{env.newTag}}</VersionPrefix>+g' ./CSTOJS_CLI.csproj
+      - uses: actions4git/setup-git@v1
+      - run: |
+          git commit -am "Nuget ${{env.newTag}}"
+          git push
+      - run: git log ${{needs.setup-outputs.outputs.currentTag}}..master --format=format:'- [%s](https://github.com/TiLied/CSTOJS_CLI/commit/%H)' --output=./release.txt   
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ env.newTag }}
+          body_path: ./release.txt
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+      - name: Update .csproj
+        run: sed -i 's+<PackageReleaseNotes></PackageReleaseNotes>+<PackageReleaseNotes>https://github.com/TiLied/CSTOJS_CLI/releases/tag/${{env.newTag}}</PackageReleaseNotes>+g' ./CSTOJS_CLI.csproj
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+      - name: Generate NuGet package
+        run: dotnet pack --configuration Release --output ./packages
+      # Get a short-lived NuGet API key
+      - name: NuGet login (OIDC → temp API key)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: TiLied # Recommended: use a secret like ${{ secrets.NUGET_USER }} for your nuget.org username (profile name), NOT your email address
+      - name: Publish NuGet package to nuget
+        run: dotnet nuget push ./packages/*.nupkg --api-key ${{steps.login.outputs.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
+      - name: Add github source
+        run: dotnet nuget add source --username TiLied --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/TiLied/index.json"
+      - name: Publish NuGet package to github
+        run: dotnet nuget push ./packages/*.nupkg --source "github"
+      - run: cat ./CSTOJS_CLI.csproj
+      - name: Upload nuget artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: CSTOJS_CLI-nuget-${{ env.newTag }}
+          path: ./packages/
+      - name: Environments
+        run: |
+          echo $newTag
