@@ -8,6 +8,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackAsTool>True</PackAsTool>
+    <PackageProjectUrl>https://tilied.github.io/CSTOJS_Pages/</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/TiLied/CSTOJS_CLI</RepositoryUrl>
     <Authors>TiLied</Authors>
@@ -46,7 +47,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CSharpToJavaScript" Version="0.2.2" />
+    <PackageReference Include="CSharpToJavaScript" Version="0.2.3" />
     <PackageReference Include="System.CommandLine" Version="2.0.8" />
   </ItemGroup>	
 
