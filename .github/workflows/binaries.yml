@@ -5,6 +5,10 @@ name: MakeBinaries
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows: ["patch"]
+    types:
+    - completed
   release:
     types: [published]
 jobs:
