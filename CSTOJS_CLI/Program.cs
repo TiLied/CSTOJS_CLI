@@ -36,17 +36,23 @@ public class Program
 		};
 		rootCommand.Options.Add(disableConsoleColors);
 
-		Argument<string> outputArgument = new("folder")
-		{
-			Description = "Output folder. Can be absolute path or relative."
-		};
+        Argument<string> outputArgument = new("folder")
+        {
+            Description = "Output folder. Can be absolute path or relative."
+        };
+        Argument<string> sourceArgument = new("source")
+        {
+            Description = "Source file to translate."
+        };
 
 		Command initCommand = new("init", "Create a barebone 'cstojs_options.xml' in the current directory, without running the dotnet commands.");
-		initCommand.Arguments.Add(outputArgument);
+        initCommand.Arguments.Add(outputArgument);
+		initCommand.Arguments.Add(sourceArgument);
 		initCommand.SetAction(InitAction);
 
 		Command setupCommand = new("setup", "Setup cstojs project in the current directory.");
-		setupCommand.Arguments.Add(outputArgument);
+        setupCommand.Arguments.Add(outputArgument);
+		setupCommand.Arguments.Add(sourceArgument);
 		setupCommand.SetAction(SetupAction);
 
 		Option<string> projectPath = new("--project", "-p")
@@ -101,7 +107,8 @@ public class Program
 			return;
 		}
 
-		string folder = result.GetRequiredValue<string>("folder");
+        string folder = result.GetRequiredValue<string>("folder");
+		string source = result.GetRequiredValue<string>("source");
 
 		Log.InfoLine($"Creating an output folder: '{Path.GetFullPath(folder)}'");
 		Directory.CreateDirectory(folder);
@@ -114,7 +121,9 @@ public class Program
 		XmlElement output = doc.CreateElement("Output");
 		output.SetAttribute("Folder", folder);
 		root.AppendChild(output);
-
+        XmlElement file = doc.CreateElement("File");
+        file.SetAttribute("Source", $"{source}");
+        root.AppendChild(file);
 		doc.AppendChild(root);
 		doc.Save("cstojs_options.xml");
 
@@ -130,7 +139,8 @@ public class Program
 			return;
 		}
 
-		string folder = result.GetRequiredValue<string>("folder");
+        string folder = result.GetRequiredValue<string>("folder");
+		string source = result.GetRequiredValue<string>("source");
 
 		Log.InfoLine("Running: 'dotnet new console -f net10.0'");
 		ProcessStartInfo startInfo = new()
@@ -169,7 +179,7 @@ public class Program
 		root.AppendChild(output);
 
 		XmlElement file = doc.CreateElement("File");
-		file.SetAttribute("Source", "./Program.cs");
+		file.SetAttribute("Source", $"{source}");
 		root.AppendChild(file);
 
 		doc.AppendChild(root);
