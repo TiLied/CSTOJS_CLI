@@ -1,7 +1,7 @@
 # CSTOJS_CLI
 [Dotnet tool](https://www.nuget.org/packages/TiLied.CSTOJS_CLI/) | [Core library](https://github.com/TiLied/CSharpToJavaScript) | [Website](https://tilied.github.io/CSTOJS_Pages/) | [Try it online!](https://tilied.github.io/CSTOJS_Pages/BWA/)
 
-This dotnet tool/CLI is a "front-end" that implements a "core" library [CSharpToJavaScript](https://github.com/TiLied/CSharpToJavaScript) translator, converter, transpiler, transcompiler, compiler, or source-to-source compiler, you name it. 
+This dotnet tool/CLI is a frontend that implements a "core" library [CSharpToJavaScript](https://github.com/TiLied/CSharpToJavaScript) translator, converter, transpiler, transcompiler, compiler, or source-to-source compiler, you name it. 
 
 The CLI was inspired (a little) by Meson, but should behave more or less like the dotnet cli or tsc cli.
 
@@ -68,6 +68,7 @@ dotnet tool uninstall --global TiLied.CSTOJS_CLI
 ```
 
 ## cstojs_options.xml
+For more information and an explanation of each element, visit the [website](https://tilied.github.io/CSTOJS_Pages/cli/cstojs-options.html).
 ```xml
 <ProjectOptions>
   <!-- This specifies an output folder for js files. This example is "Output". -->
@@ -96,13 +97,30 @@ dotnet tool uninstall --global TiLied.CSTOJS_CLI
 
 [More on the website](https://tilied.github.io/CSTOJS_Pages/tutorials/hello-world.html)
 
-## Commands
-Run subcommands with `-h` to get more information.
+## cstojs-cli -h
+Run subcommands with `-h` to get more information or visit the [website](https://tilied.github.io/CSTOJS_Pages/cli/cli.html).
 ```
-init <folder>   Create a barebone 'cstojs_options.xml', without running the dotnet commands.
-setup <folder>  Setup cstojs project.
-translate       Translate specified files in the 'cstojs_options.xml'.
-watch           Watches specified files in the 'cstojs_options.xml' with an interval and translates them. Note: The 'cstojs_options.xml' file is not being monitored, so any changes require the command to be restarted.
+Description:
+  Dotnet tool/cli frontend for a CSharpToJavaScript library.
+
+Usage:
+  CSTOJS_CLI [command] [options]
+
+Options:
+  --disable-console-output  Self-explanatory, Disable Console Output.
+  --disable-console-colors  Self-explanatory, Disable Console Colors.
+  -?, -h, --help            Show help and usage information
+  --version                 Show version information
+
+Commands:
+  init <folder>   Create a barebone 'cstojs_options.xml' in the current directory, without running the dotnet commands.
+                  This command should be used if a C# project already exists.
+  setup <folder>  Setup cstojs project in the current directory.
+                  This command should be used if you are starting from scratch.
+  translate       Translate specified files in the 'cstojs_options.xml'.
+  watch           Watches specified files in the 'cstojs_options.xml' with an interval and translates them. 
+                  Note: The 'cstojs_options.xml' file is not being monitored, so any changes require the command to be 
+                  restarted.
 ```
 
 ## Related Repository 
