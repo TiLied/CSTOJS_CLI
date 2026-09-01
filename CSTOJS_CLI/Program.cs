@@ -574,7 +574,15 @@ public class Program
 
 						string pathCombined = Path.Combine(data.OutputPath, translatedFile.FileName);
 						await File.WriteAllTextAsync(pathCombined, translatedFile.TranslatedStr);
-
+						
+						if (translatedFile.OptionsForFile.Debug)
+						{
+							for (int j = 0; j < translatedFile.DebugStrings.Length; j++)
+							{
+								await File.WriteAllTextAsync(pathCombined + $".{j}.cstojs", translatedFile.DebugStrings[j]);
+							}
+						}
+						
 						Log.InfoLine($"--- Directory: {Path.GetFullPath(data.OutputPath)}");
 						Log.InfoLine($"--- --- File: {translatedFile.FileName}");
 
