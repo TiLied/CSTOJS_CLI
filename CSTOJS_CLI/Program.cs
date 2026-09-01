@@ -18,7 +18,7 @@ public class Program
 
 	private static int Main(string[] args)
 	{
-		RootCommand rootCommand = new("Dotnet tool/cli for a CSharpToJavaScript library.");
+		RootCommand rootCommand = new("Dotnet tool/cli frontend for a CSharpToJavaScript library.");
 
 		Option<bool> disableConsoleOutput = new("--disable-console-output")
 		{
@@ -41,18 +41,21 @@ public class Program
 			Description = "Output folder. Can be absolute path or relative."
 		};
 
-		Command initCommand = new("init", "Create a barebone 'cstojs_options.xml' in the current directory, without running the dotnet commands.");
+		Command initCommand = new("init", @"Create a barebone 'cstojs_options.xml' in the current directory, without running the dotnet commands.
+This command should be used if a C# project already exists.");
 		initCommand.Arguments.Add(outputArgument);
 		initCommand.SetAction(InitAction);
 
-		Command setupCommand = new("setup", "Setup cstojs project in the current directory.");
+		Command setupCommand = new("setup", @"Setup cstojs project in the current directory.
+This command should be used if you are starting from scratch.");
 		setupCommand.Arguments.Add(outputArgument);
 		setupCommand.SetAction(SetupAction);
 
 		Option<string> projectPath = new("--project", "-p")
 		{
 			HelpName = "path",
-			Description = "Path to the 'cstojs_options.xml'. Note: The name of the file can be anything as long as the file ends with xml and follows structure `<ProjectOptionx>...</ProjectOptions>`.",
+			Description = @"Path to the 'cstojs_options.xml'. 
+Note: The name of the file can be anything as long as the file ends with xml and follows structure `<ProjectOptionx>...</ProjectOptions>`.",
 			DefaultValueFactory = (r) => { return "./cstojs_options.xml"; }
 		};
 
@@ -77,7 +80,8 @@ public class Program
 			}
 		};
 
-		Command watchCommand = new("watch", "Watches specified files in the 'cstojs_options.xml' with an interval and translates them. Note: The 'cstojs_options.xml' file is not being monitored, so any changes require the command to be restarted.");
+		Command watchCommand = new("watch", @"Watches specified files in the 'cstojs_options.xml' with an interval and translates them. 
+Note: The 'cstojs_options.xml' file is not being monitored, so any changes require the command to be restarted.");
 		watchCommand.SetAction(WatchAction);
 		watchCommand.Options.Add(projectPath);
 		watchCommand.Options.Add(delayWatch);
@@ -203,9 +207,8 @@ public class Program
 		string? KeepBraceOnTheSameLine = null;
 		string? NormalizeWhitespace = null;
 		string? MakePropertiesEnumerable = null;
-		
-		string? TranslateFile = null;
-		string? ProcessNameOfExpression = null;
+		string? DisableTranslation = null;
+		string? DisableNameOfProcessing = null;
 		
 		string? EnableModules = null;
 
@@ -322,9 +325,8 @@ public class Program
 								KeepBraceOnTheSameLine = reader.GetAttribute("KeepBraceOnTheSameLine");
 								NormalizeWhitespace = reader.GetAttribute("NormalizeWhitespace");
 								MakePropertiesEnumerable = reader.GetAttribute("MakePropertiesEnumerable");
-
-								TranslateFile = reader.GetAttribute("TranslateFile");
-								ProcessNameOfExpression = reader.GetAttribute("ProcessNameOfExpression");
+								DisableTranslation = reader.GetAttribute("DisableTranslation");
+								DisableNameOfProcessing = reader.GetAttribute("DisableNameOfProcessing");
 								
 								EnableModules = reader.GetAttribute("EnableModules");
 
@@ -381,21 +383,20 @@ public class Program
 										currentFile.OptionsForFile.MakePropertiesEnumerable = bool.Parse(MakePropertiesEnumerable);
 									break;
 								}
-
-								if (TranslateFile != null)
+								if (DisableTranslation != null)
 								{
 									if (currentFile == null)
-										defaultOptions.TranslateFile = bool.Parse(TranslateFile);
+										defaultOptions.DisableTranslation = bool.Parse(DisableTranslation);
 									else
-										currentFile.OptionsForFile.TranslateFile = bool.Parse(TranslateFile);
+										currentFile.OptionsForFile.DisableTranslation = bool.Parse(DisableTranslation);
 									break;
 								}
-								if (ProcessNameOfExpression != null)
+								if (DisableNameOfProcessing != null)
 								{
 									if (currentFile == null)
-										defaultOptions.ProcessNameOfExpression = bool.Parse(ProcessNameOfExpression);
+										defaultOptions.DisableNameOfProcessing = bool.Parse(DisableNameOfProcessing);
 									else
-										currentFile.OptionsForFile.ProcessNameOfExpression = bool.Parse(ProcessNameOfExpression);
+										currentFile.OptionsForFile.DisableNameOfProcessing = bool.Parse(DisableNameOfProcessing);
 									break;
 								}
 								
