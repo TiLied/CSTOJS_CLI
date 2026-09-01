@@ -549,7 +549,8 @@ public class Program
 		}
 
 		Log.InfoLine("Press ctrl+c to end watching.");
-
+		Console.CancelKeyPress += Exit;
+		
 		Dictionary<string, DateTime> dateTimes = new();
 		for (int i = 0; i < data.Files.Count; i++)
 		{
@@ -587,7 +588,8 @@ public class Program
 					}
 				}
 			}
-
+			
+			//Todo? Timer rather than thread sleep?
 			Thread.Sleep(delay);
 		}
 	}
@@ -598,6 +600,11 @@ public class Program
 		Log.DisableConsoleOutput = result.GetValue<bool>("--disable-console-output");
 	}
 	
+	private static void Exit(object? sender, ConsoleCancelEventArgs e)
+	{
+		Log.InfoLine("Exiting.");
+		RunWatch = false;
+	}
 }
 
 public class XMLData
