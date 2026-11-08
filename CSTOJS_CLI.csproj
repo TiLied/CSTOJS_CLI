@@ -15,10 +15,11 @@
     <Title>CSTOJS CLI</Title>
     <Description>Dotnet tool/CLI for a C# to JS transpiler.</Description>
     <ToolCommandName>cstojs-cli</ToolCommandName>
-    <PackageId>TiLied.$(AssemblyName)</PackageId>
+    <PackageId>TiLied.CSTOJS_CLI</PackageId>
     <PackageTags>tool, cli, csharp, c#, translation, translator, js, javascript, dotnet-tool, transpiler, converter, transcompiler, compiler, s2s, source-to-source</PackageTags>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
 	<PackageIcon>CSTOJS_128.png</PackageIcon>
+	<AssemblyName>cstojs-cli</AssemblyName>
 	<PackageReleaseNotes></PackageReleaseNotes>
 	
     <OutputType>Exe</OutputType>
