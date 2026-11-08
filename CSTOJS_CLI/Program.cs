@@ -72,7 +72,7 @@ This command should be used if you are starting from scratch.");
 		{
 			HelpName = "path",
 			Description = @"Path to the 'cstojs_options.xml'. 
-Note: The name of the file can be anything as long as the file ends with xml and follows structure `<ProjectOptionx>...</ProjectOptions>`.",
+Note: The name of the file can be anything as long as the file ends with xml and follows structure `<ProjectOptions>...</ProjectOptions>`.",
 			DefaultValueFactory = (r) => { return "./cstojs_options.xml"; }
 		};
 
@@ -274,6 +274,13 @@ Note: The 'cstojs_options.xml' file is not being monitored, so any changes requi
 						{
 							//Log.WriteLine($"Start Element {reader.Name}");
 
+							if (reader.Depth == 0 && reader.Name != "ProjectOptions")
+							{
+								Log.ErrorLine("Root must be 'ProjectOptions'.");
+								data.Error = true;
+								return data;
+							}
+							
 							if (reader.Name == "Output")
 							{
 								string? _output = reader.GetAttribute("Folder");
