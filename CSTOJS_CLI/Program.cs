@@ -53,6 +53,16 @@ This command should be used if a C# project already exists.");
 			DefaultValueFactory = (r) => { return "cstojs_options"; }
 		};
 		initCommand.Options.Add(nameOption);
+		
+		Option<string[]> fileSourceOption = new("--file-source", "-fs")
+		{
+			HelpName = "paths",
+			Description = "Adds file sources(paths) to the project file. Multiple paths can be specified.",
+			AllowMultipleArgumentsPerToken = true,
+			DefaultValueFactory = (r) => { return []; }
+		};
+		initCommand.Options.Add(fileSourceOption);
+		
 		Command setupCommand = new("setup", @"Setup cstojs project in the current directory.
 This command should be used if you are starting from scratch.");
 		setupCommand.Arguments.Add(outputArgument);
@@ -108,6 +118,8 @@ Note: The 'cstojs_options.xml' file is not being monitored, so any changes requi
 		
 		string folder = result.GetRequiredValue<string>("folder");
 		string name = result.GetValue<string>("--name") ?? "cstojs_options";
+		string[] fileSources = result.GetValue<string[]>("--file-source") ?? [];
+		
 		if (File.Exists($"./{name}.xml"))
 		{
 			Log.ErrorLine($"'{name}.xml' already exists!");
@@ -132,7 +144,21 @@ Note: The 'cstojs_options.xml' file is not being monitored, so any changes requi
 		XmlElement output = doc.CreateElement("Output");
 		output.SetAttribute("Folder", folder);
 		root.AppendChild(output);
-
+		
+		for (int i = 0; i < fileSources.Length; i++)
+		{
+			if (File.Exists(fileSources[i]))
+			{
+				XmlElement file = doc.CreateElement("File");
+				file.SetAttribute("Source", fileSources[i]);
+				root.AppendChild(file);
+			}
+			else
+			{
+				Log.WarningLine($"File does not exists: '{fileSources[i]}'");
+			}
+		}
+		
 		doc.AppendChild(root);
 		doc.Save($"{name}.xml");
 
