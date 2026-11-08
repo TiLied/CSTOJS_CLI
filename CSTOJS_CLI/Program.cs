@@ -41,11 +41,18 @@ public class Program
 			Description = "Output folder. Can be absolute path or relative."
 		};
 
-		Command initCommand = new("init", @"Create a barebone 'cstojs_options.xml' in the current directory, without running the dotnet commands.
+		Command initCommand = new("init", @"Creates a barebone 'cstojs_options.xml'(name can be changed with '--name' option) in the current directory, without running the dotnet commands.
 This command should be used if a C# project already exists.");
 		initCommand.Arguments.Add(outputArgument);
 		initCommand.SetAction(InitAction);
 
+		Option<string> nameOption = new("--name", "-n")
+		{
+			HelpName = "fileName",
+			Description = @"The name of a project file, without the extension.",
+			DefaultValueFactory = (r) => { return "cstojs_options"; }
+		};
+		initCommand.Options.Add(nameOption);
 		Command setupCommand = new("setup", @"Setup cstojs project in the current directory.
 This command should be used if you are starting from scratch.");
 		setupCommand.Arguments.Add(outputArgument);
@@ -99,18 +106,25 @@ Note: The 'cstojs_options.xml' file is not being monitored, so any changes requi
 	{
 		SetupLog(result);
 		
-		if (File.Exists("./cstojs_options.xml"))
+		string folder = result.GetRequiredValue<string>("folder");
+		string name = result.GetValue<string>("--name") ?? "cstojs_options";
+		if (File.Exists($"./{name}.xml"))
 		{
-			Log.ErrorLine($"'cstojs_options.xml' already exists!");
+			Log.ErrorLine($"'{name}.xml' already exists!");
 			return;
 		}
 
-		string folder = result.GetRequiredValue<string>("folder");
-
-		Log.InfoLine($"Creating an output folder: '{Path.GetFullPath(folder)}'");
-		Directory.CreateDirectory(folder);
-
-		Log.InfoLine($"Creating 'cstojs_options.xml'");
+		if (Directory.Exists(Path.GetFullPath(folder)))
+		{
+			Log.InfoLine($"The specified output path exists, skipping creation: '{Path.GetFullPath(folder)}'");
+		}
+		else
+		{
+			Log.InfoLine($"Creating an output folder: '{Path.GetFullPath(folder)}'");
+			Directory.CreateDirectory(folder);
+		}
+		
+		Log.InfoLine($"Creating '{name}.xml'");
 		XmlDocument doc = new();
 
 		XmlElement root = doc.CreateElement(string.Empty, "ProjectOptions", string.Empty);
@@ -120,7 +134,7 @@ Note: The 'cstojs_options.xml' file is not being monitored, so any changes requi
 		root.AppendChild(output);
 
 		doc.AppendChild(root);
-		doc.Save("cstojs_options.xml");
+		doc.Save($"{name}.xml");
 
 		Log.InfoLine($"Init ended!");
 	}
@@ -160,8 +174,15 @@ Note: The 'cstojs_options.xml' file is not being monitored, so any changes requi
 		Log.WriteLine(proc.StandardError.ReadToEnd());
 		proc.WaitForExit();
 
-		Log.InfoLine($"Creating an output folder: '{Path.GetFullPath(folder)}'");
-		Directory.CreateDirectory(folder);
+		if (Directory.Exists(Path.GetFullPath(folder)))
+		{
+			Log.InfoLine($"The specified output path exists, skipping creation: '{Path.GetFullPath(folder)}'");
+		}
+		else
+		{
+			Log.InfoLine($"Creating an output folder: '{Path.GetFullPath(folder)}'");
+			Directory.CreateDirectory(folder);
+		}
 
 		Log.InfoLine($"Creating 'cstojs_options.xml'");
 		XmlDocument doc = new();
@@ -189,7 +210,7 @@ Note: The 'cstojs_options.xml' file is not being monitored, so any changes requi
 		string projectPath = result.GetValue<string>("--project") ?? "./cstojs_options.xml";
 		if (!File.Exists(projectPath))
 		{
-			Log.ErrorLine($"File 'cstojs_options.xml' does not exists: {projectPath}");
+			Log.ErrorLine($"Path to the file does not exists: {projectPath}");
 			data.Error = true;
 			return data;
 		}
@@ -510,7 +531,8 @@ Note: The 'cstojs_options.xml' file is not being monitored, so any changes requi
 			return;
 		if (data.Files.Count == 0)
 		{
-			Log.ErrorLine("No files specified in 'cstojs_options.xml'.");
+			string projectPath = result.GetValue<string>("--project") ?? "./cstojs_options.xml";
+			Log.ErrorLine($"No files specified in the '{projectPath}'.");
 			return;
 		}
 
@@ -545,7 +567,8 @@ Note: The 'cstojs_options.xml' file is not being monitored, so any changes requi
 			return;
 		if (data.Files.Count == 0)
 		{
-			Log.ErrorLine("No files specified in 'cstojs_options.xml'.");
+			string projectPath = result.GetValue<string>("--project") ?? "./cstojs_options.xml";
+			Log.ErrorLine($"No files specified in the '{projectPath}'.");
 			return;
 		}
 
