@@ -494,8 +494,14 @@ Note: The 'cstojs_options.xml' file is not being monitored, so any changes requi
 								if (reader.IsEmptyElement)
 									currentFile.OptionsForFile = defaultOptions;
 								else
-									currentFile.OptionsForFile = new();
-
+								{
+									//https://stackoverflow.com/a/8100477
+									reader.ReadStartElement();
+									if (reader.IsStartElement())
+										currentFile.OptionsForFile = new();
+									else
+										currentFile.OptionsForFile = defaultOptions;
+								}
 								data.Files.Add(currentFile);
 								break;
 							}
@@ -816,19 +822,19 @@ Note: The 'cstojs_options.xml' file is not being monitored, so any changes requi
 		if (Debug != null)
 			options.Add(nameof(Debug), Debug!.ToString()!);
 		if (DisableDiagnostics != null)
-			options.Add(nameof(DisableDiagnostics), DisableDiagnostics!.ToString()!.ToLower());
+			options.Add(nameof(DisableDiagnostics), DisableDiagnostics!.ToString()!);
 		if (UseVarOverLet != null)
-			options.Add(nameof(UseVarOverLet), UseVarOverLet!.ToString()!.ToLower());
+			options.Add(nameof(UseVarOverLet), UseVarOverLet!.ToString()!);
 		if (KeepBraceOnTheSameLine != null)
-			options.Add(nameof(KeepBraceOnTheSameLine), KeepBraceOnTheSameLine!.ToString()!.ToLower());
+			options.Add(nameof(KeepBraceOnTheSameLine), KeepBraceOnTheSameLine!.ToString()!);
 		if (NormalizeWhitespace != null)
-			options.Add(nameof(NormalizeWhitespace), NormalizeWhitespace!.ToString()!.ToLower());
+			options.Add(nameof(NormalizeWhitespace), NormalizeWhitespace!.ToString()!);
 		if (MakePropertiesEnumerable != null)
-			options.Add(nameof(MakePropertiesEnumerable), MakePropertiesEnumerable!.ToString()!.ToLower());
+			options.Add(nameof(MakePropertiesEnumerable), MakePropertiesEnumerable!.ToString()!);
 		if (DisableTranslation != null)
-			options.Add(nameof(DisableTranslation), DisableTranslation!.ToString()!.ToLower());
+			options.Add(nameof(DisableTranslation), DisableTranslation!.ToString()!);
 		if (DisableNameOfProcessing != null)
-			options.Add(nameof(DisableNameOfProcessing), DisableNameOfProcessing!.ToString()!.ToLower());
+			options.Add(nameof(DisableNameOfProcessing), DisableNameOfProcessing!.ToString()!);
 
 		if (EnableModules != null)
 			options.Add(nameof(EnableModules), EnableModules!.ToString()!);
@@ -911,21 +917,7 @@ Note: The 'cstojs_options.xml' file is not being monitored, so any changes requi
 
 				XmlNodeList _childNodes = root.ChildNodes;
 
-				//Find an Output element.
 				XmlNode? _outputElement = null;
-				for (int i = 0; i <= _childNodes.Count; i++)
-				{
-					if (i == _childNodes.Count)
-					{
-						Log.ErrorLine($"Cannot find an Output element, please recreate a project file with init command.");
-						return;
-					}
-					if (_childNodes[i].Name == "Output")
-					{
-						_outputElement = _childNodes[i];
-						break;
-					}
-				}
 
 				if (fileSourceOption != string.Empty)
 				{
@@ -945,15 +937,38 @@ Note: The 'cstojs_options.xml' file is not being monitored, so any changes requi
 					}
 					Log.InfoLine($"Under a File element: '{fileSourceOption}'");
 				}
+				else
+				{
+					//Find an Output element.
+					for (int i = 0; i <= _childNodes.Count; i++)
+					{
+						if (i == _childNodes.Count)
+						{
+							Log.ErrorLine($"Cannot find an Output element, please recreate a project file with init command.");
+							return;
+						}
+						if (_childNodes[i].Name == "Output")
+						{
+							_outputElement = _childNodes[i];
+							break;
+						}
+					}
+				}
 
 				for (int i = 0; i <= _childNodes.Count; i++)
 				{
 					if (i == _childNodes.Count)
 					{
-						Log.InfoLine($"Insertind an Option element after an Output element with name: '{option.Key}' and with value: '{option.Value}'.");
+						Log.InfoLine($"Inserting an Option element after an Output element with name: '{option.Key}' and with value: '{option.Value}'.");
+						
 						XmlElement _option = doc.CreateElement("Option");
 						_option.SetAttribute(option.Key, option.Value);
-						root.InsertAfter(_option, _outputElement);
+
+						if (fileSourceOption != string.Empty)
+							root.AppendChild(_option);
+						else
+							root.InsertAfter(_option, _outputElement);
+						
 						break;
 					}
 					if (_childNodes[i].Attributes[0].Name == option.Key)
