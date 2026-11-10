@@ -212,17 +212,17 @@ Note: The 'cstojs_options.xml' file is not being monitored, so any changes requi
 		
 		Option<bool> RemoveOption = new("--remove")
 		{
-			Description = @"Removes from the project file.",
+			Description = @"Removes an element from a project file.",
 			DefaultValueFactory = (r) => { return false; }
 		};
 		Option<bool> AddOption = new("--add")
 		{
-			Description = @"Adds to the project file.",
+			Description = @"Adds an element to a project file.",
 			DefaultValueFactory = (r) => { return false; }
 		};
 		Option<string> ChangeOption = new("--change")
 		{
-			Description = @"Changes file/option element in the project file.",
+			Description = @"Changes an element in a project file.",
 			DefaultValueFactory = (r) => { return ""; }
 		};
 		
@@ -812,37 +812,37 @@ Note: The 'cstojs_options.xml' file is not being monitored, so any changes requi
 		string? AddSBAtTheBottom = result.GetValue<string>("--AddSBAtTheBottom") ?? null;
 		
 
-		List<string> optionNames = new();
+		Dictionary<string, string> options = new();
 		if (Debug != null)
-			optionNames.Add(nameof(Debug));
+			options.Add(nameof(Debug), Debug!.ToString()!);
 		if (DisableDiagnostics != null)
-			optionNames.Add(nameof(DisableDiagnostics));
+			options.Add(nameof(DisableDiagnostics), DisableDiagnostics!.ToString()!.ToLower());
 		if (UseVarOverLet != null)
-			optionNames.Add(nameof(UseVarOverLet));
+			options.Add(nameof(UseVarOverLet), UseVarOverLet!.ToString()!.ToLower());
 		if (KeepBraceOnTheSameLine != null)
-			optionNames.Add(nameof(KeepBraceOnTheSameLine));
+			options.Add(nameof(KeepBraceOnTheSameLine), KeepBraceOnTheSameLine!.ToString()!.ToLower());
 		if (NormalizeWhitespace != null)
-			optionNames.Add(nameof(NormalizeWhitespace));
+			options.Add(nameof(NormalizeWhitespace), NormalizeWhitespace!.ToString()!.ToLower());
 		if (MakePropertiesEnumerable != null)
-			optionNames.Add(nameof(MakePropertiesEnumerable));
+			options.Add(nameof(MakePropertiesEnumerable), MakePropertiesEnumerable!.ToString()!.ToLower());
 		if (DisableTranslation != null)
-			optionNames.Add(nameof(DisableTranslation));
+			options.Add(nameof(DisableTranslation), DisableTranslation!.ToString()!.ToLower());
 		if (DisableNameOfProcessing != null)
-			optionNames.Add(nameof(DisableNameOfProcessing));
+			options.Add(nameof(DisableNameOfProcessing), DisableNameOfProcessing!.ToString()!.ToLower());
 
 		if (EnableModules != null)
-			optionNames.Add(nameof(EnableModules));
-			
+			options.Add(nameof(EnableModules), EnableModules!.ToString()!);
+
 		if (CustomPathToDLLs != null)
-			optionNames.Add(nameof(CustomPathToDLLs));
+			options.Add(nameof(CustomPathToDLLs), CustomPathToDLLs);
 		if (CustomCSNamesToJS != null)
-			optionNames.Add(nameof(CustomCSNamesToJS));
+			options.Add(nameof(CustomCSNamesToJS), CustomCSNamesToJS);
 		if (AddSBAtTheTop != null)
-			optionNames.Add(nameof(AddSBAtTheTop));
+			options.Add(nameof(AddSBAtTheTop), AddSBAtTheTop);
 		if (AddSBAtTheBottom != null)
-			optionNames.Add(nameof(AddSBAtTheBottom));
+			options.Add(nameof(AddSBAtTheBottom), AddSBAtTheBottom);
 		//
-		
+
 		bool removeOption = result.GetValue<bool>("--remove");
 		bool addOption = result.GetValue<bool>("--add");
 		string changeOption = result.GetValue<string>("--change") ?? string.Empty;
@@ -862,88 +862,143 @@ Note: The 'cstojs_options.xml' file is not being monitored, so any changes requi
 			return;
 		}
 
-		if (removeOption)
+		foreach (KeyValuePair<string, string> option in options)
 		{
-			Log.InfoLine("'--remove' option is used.");
-
-			XmlNodeList _childNodes = root.ChildNodes;
-			if (fileSourceOption != string.Empty)
+			if (removeOption)
 			{
+				Log.InfoLine("'--remove' option is used.");
+
+				XmlNodeList _childNodes = root.ChildNodes;
+				if (fileSourceOption != string.Empty)
+				{
+					for (int i = 0; i <= _childNodes.Count; i++)
+					{
+						if (i == _childNodes.Count)
+						{
+							Log.WarningLine($"Cannot locate a File element with the source: '{fileSourceOption}'.");
+							return;
+						}
+						if (_childNodes[i].Attributes[0].Value == fileSourceOption)
+						{
+							root = (XmlElement)_childNodes[i];
+							_childNodes = _childNodes[i].ChildNodes;
+							break;
+						}
+					}
+					Log.InfoLine($"Under a File element: '{fileSourceOption}'");
+				}
+
 				for (int i = 0; i <= _childNodes.Count; i++)
 				{
 					if (i == _childNodes.Count)
 					{
-						Log.WarningLine($"Cannot locate a File element with the source: '{fileSourceOption}'.");
-						return;
+						Log.WarningLine($"Cannot locate an Option element with an attribute name: '{option.Key}'. Is it already removed?");
+						break;
 					}
-					if (_childNodes[i].Attributes[0].Value == fileSourceOption)
+					if (_childNodes[i].Attributes[0].Name == option.Key)
 					{
-						root = (XmlElement)_childNodes[i];
-						_childNodes = _childNodes[i].ChildNodes;
+						Log.InfoLine($"Removing an Option element with an attribute name: '{option.Key}'. Child id: {i}.");
+						root.RemoveChild(_childNodes[i]);
 						break;
 					}
 				}
-				Log.InfoLine($"Under a File element: '{fileSourceOption}'");
+
 			}
 
-			for (int i = 0; i < optionNames.Count; i++)
+			if (addOption)
 			{
-				for (int j = 0; j <= _childNodes.Count; j++)
-				{
-					if (j == _childNodes.Count)
-					{
-						Log.WarningLine($"Cannot locate an Option element with an attribute name: '{optionNames[i]}'. Is it already removed?");
-						break;
-					}
-					if (_childNodes[j].Attributes[0].Name == optionNames[i])
-					{
-						Log.InfoLine($"Removing an Option element with an attribute name: '{optionNames[i]}'. Child id: {j}.");
-						root.RemoveChild(_childNodes[j]);
-						break;
-					}
-				}
-			}
-		}
+				Log.InfoLine("'--add' option is used.");
 
-		if (addOption)
-		{
-			Log.InfoLine("'--add' option is used.");
-			
-			XmlNodeList _childNodes = root.ChildNodes;
-			if (fileSourceOption != string.Empty)
-			{
+				XmlNodeList _childNodes = root.ChildNodes;
+
+				//Find an Output element.
+				XmlNode? _outputElement = null;
 				for (int i = 0; i <= _childNodes.Count; i++)
 				{
 					if (i == _childNodes.Count)
 					{
-						Log.WarningLine($"Cannot locate a File element with the source: '{fileSourceOption}'.");
+						Log.ErrorLine($"Cannot find an Output element, please recreate a project file with init command.");
 						return;
 					}
-					if (_childNodes[i].Attributes[0].Value == fileSourceOption)
+					if (_childNodes[i].Name == "Output")
 					{
-						root = (XmlElement)_childNodes[i];
-						_childNodes = _childNodes[i].ChildNodes;
+						_outputElement = _childNodes[i];
 						break;
 					}
 				}
-				Log.InfoLine($"Under a File element: '{fileSourceOption}'");
-			}
-			
-			for (int i = 0; i < optionNames.Count; i++)
-			{
-				for (int j = 0; j <= _childNodes.Count; j++)
+
+				if (fileSourceOption != string.Empty)
 				{
-					if (j == _childNodes.Count)
+					for (int i = 0; i <= _childNodes.Count; i++)
 					{
-						//Log.InfoLine($"Appending an Option element with name: '{optionNames[i]}' and with value: '{result.GetValue($"--{optionNames[i]}")}'.");
-						//XmlElement _option = doc.CreateElement("Option");
-						//_option.SetAttribute(optionNames[i], fileSource);
-						//root.AppendChild(_option);
+						if (i == _childNodes.Count)
+						{
+							Log.WarningLine($"Cannot locate a File element with the source: '{fileSourceOption}'.");
+							return;
+						}
+						if (_childNodes[i].Attributes[0].Value == fileSourceOption)
+						{
+							root = (XmlElement)_childNodes[i];
+							_childNodes = _childNodes[i].ChildNodes;
+							break;
+						}
+					}
+					Log.InfoLine($"Under a File element: '{fileSourceOption}'");
+				}
+
+				for (int i = 0; i <= _childNodes.Count; i++)
+				{
+					if (i == _childNodes.Count)
+					{
+						Log.InfoLine($"Insertind an Option element after an Output element with name: '{option.Key}' and with value: '{option.Value}'.");
+						XmlElement _option = doc.CreateElement("Option");
+						_option.SetAttribute(option.Key, option.Value);
+						root.InsertAfter(_option, _outputElement);
 						break;
 					}
-					if (_childNodes[j].Attributes[0].Name == optionNames[i])
+					if (_childNodes[i].Attributes[0].Name == option.Key)
 					{
-						Log.WarningLine($"An Option element already exist with an attrinute name: '{optionNames[i]}'. If you want to change a value use '--change'");
+						Log.WarningLine($"An Option element already exist with an attrinute name: '{option.Key}'. If you want to change a value use '--change'.");
+						break;
+					}
+				}
+			}
+
+			if (changeOption != string.Empty)
+			{
+				Log.InfoLine($"'--change' option is used with value: '{changeOption}'.");
+				
+				XmlNodeList _childNodes = root.ChildNodes;
+				if (fileSourceOption != string.Empty)
+				{
+					for (int i = 0; i <= _childNodes.Count; i++)
+					{
+						if (i == _childNodes.Count)
+						{
+							Log.WarningLine($"Cannot locate a File element with the source: '{fileSourceOption}'.");
+							return;
+						}
+						if (_childNodes[i].Attributes[0].Value == fileSourceOption)
+						{
+							root = (XmlElement)_childNodes[i];
+							_childNodes = _childNodes[i].ChildNodes;
+							break;
+						}
+					}
+					Log.InfoLine($"Under a File element: '{fileSourceOption}'");
+				}
+
+				for (int i = 0; i <= _childNodes.Count; i++)
+				{
+					if (i == _childNodes.Count)
+					{
+						Log.WarningLine($"Cannot locate an Option element with an attribute name: '{option.Key}'. Is it exist? Try --add?");
+						break;
+					}
+					if (_childNodes[i].Attributes[0].Name == option.Key)
+					{
+						Log.InfoLine($"Changing an Option element value: '{_childNodes[i].Attributes[0].Value}' to '{changeOption}'.");
+						_childNodes[i].Attributes[0].Value = changeOption;
 						break;
 					}
 				}
@@ -1033,7 +1088,7 @@ Note: The 'cstojs_options.xml' file is not being monitored, so any changes requi
 
 		if (changeOption != string.Empty)
 		{
-			Log.InfoLine($"'--change' option is used with: '{changeOption}'.");
+			Log.InfoLine($"'--change' option is used with value: '{changeOption}'.");
 
 			if (!File.Exists(changeOption))
 			{
