@@ -857,6 +857,12 @@ Note: The --project file is not being monitored, so any changes to it require th
 			options.Add(nameof(AddSBAtTheBottom), AddSBAtTheBottom);
 		//
 
+		if (options.Count == 0)
+		{
+			Log.ErrorLine("No option is specified. Run 'cstojs-cli configure option --help'.");
+			return;
+		}
+		
 		bool removeOption = result.GetValue<bool>("--remove");
 		bool addOption = result.GetValue<bool>("--add");
 		string changeOption = result.GetValue<string>("--change") ?? string.Empty;
@@ -1029,13 +1035,14 @@ Note: The --project file is not being monitored, so any changes to it require th
 			Log.ErrorLine("root is null or root is not 'ProjectOptions'. You can create a project file with the init command.");
 			return;
 		}
+
+		XmlNodeList childNodes = root.ChildNodes;
 		
 		if (removeOption)
 		{
 			Log.InfoLine("'--remove' option is used.");
 
-			XmlNodeList _childNodes = root.ChildNodes;
-			XmlNode? _node = GetElement(_childNodes, string.Empty, fileSource);
+			XmlNode? _node = GetElement(childNodes, string.Empty, fileSource);
 			if (_node == null)
 			{
 				Log.ErrorLine($"Cannot locate a File element with source: '{fileSource}'. Is it already removed?");
@@ -1055,11 +1062,11 @@ Note: The --project file is not being monitored, so any changes to it require th
 			if (!File.Exists(fileSource))
 			{
 				Log.ErrorLine($"File does not exist: '{fileSource}'. Skipping '--add' option.");
+				return;
 			}
 			else
 			{
-				XmlNodeList _childNodes = root.ChildNodes;
-				XmlNode? _node = GetElement(_childNodes, string.Empty, fileSource);
+				XmlNode? _node = GetElement(childNodes, string.Empty, fileSource);
 				if (_node == null)
 				{
 					Log.InfoLine($"Appending to the root a File element with source: '{fileSource}'.");
@@ -1082,12 +1089,11 @@ Note: The --project file is not being monitored, so any changes to it require th
 			if (!File.Exists(changeOption))
 			{
 				Log.ErrorLine($"File does not exist: '{changeOption}'. Skipping '--change' option.");
+				return;
 			}
 			else
 			{
-
-				XmlNodeList _childNodes = root.ChildNodes;
-				XmlNode? _node = GetElement(_childNodes, "Source", fileSource);
+				XmlNode? _node = GetElement(childNodes, "Source", fileSource);
 				if (_node == null)
 				{
 					Log.ErrorLine($"Cannot locate a File element with attribute name: 'Source' and value: '{fileSource}'.");
@@ -1127,6 +1133,8 @@ Note: The --project file is not being monitored, so any changes to it require th
 			return;
 		}
 
+		XmlNodeList childNodes = root.ChildNodes;
+		
 		if (changeOption != string.Empty)
 		{
 			Log.InfoLine($"'--change' option is used with value: '{changeOption}'.");
@@ -1138,9 +1146,7 @@ Note: The --project file is not being monitored, so any changes to it require th
 			}
 			else
 			{
-
-				XmlNodeList _childNodes = root.ChildNodes;
-				XmlNode? _node = GetElement(_childNodes, "Folder");
+				XmlNode? _node = GetElement(childNodes, "Folder");
 				if (_node == null)
 				{
 					Log.ErrorLine($"Cannot locate an Output element with attribute name: 'Folder'.");
