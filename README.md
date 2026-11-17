@@ -12,7 +12,7 @@ dotnet tool install --global TiLied.CSTOJS_CLI
 ```
 ### To use:
 ```csharp
-cstojs-cli setup "Output"
+cstojs-cli setup "./Output"
 ```
 ```csharp
 cstojs-cli translate
@@ -72,7 +72,7 @@ For more information and an explanation of each element, visit the [website](htt
 ```xml
 <ProjectOptions>
   <!-- This specifies an output folder for js files. This example is "Output". -->
-  <Output Folder="Output" />
+  <Output Folder="./Output" />
 
   <!-- This is the default option which will be applied to every file that follows. -->
   <!-- See all available options at https://github.com/TiLied/CSharpToJavaScript/blob/master/CSharpToJavaScript/CSTOJSOptions.cs -->
@@ -94,6 +94,7 @@ For more information and an explanation of each element, visit the [website](htt
 - [Hello world](https://tilied.github.io/CSTOJS_Pages/tutorials/hello-world.html#hello-world)
 - [Simple todo](https://tilied.github.io/CSTOJS_Pages/tutorials/simple-todo.html)
 - [Simple module](https://tilied.github.io/CSTOJS_Pages/tutorials/simple-module.html)
+- [Model example](https://tilied.github.io/CSTOJS_Pages/tutorials/model.html)
 
 [More on the website](https://tilied.github.io/CSTOJS_Pages/tutorials/hello-world.html)
 
