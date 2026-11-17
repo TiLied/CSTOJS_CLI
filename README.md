@@ -57,7 +57,7 @@ cstojs-cli setup "Output"
 cstojs-cli translate
 ```
 - - The "Output" folder will contain a translated "Program.js" file.
-- To add a new CS file, add `<File Source="./Test.cs" />` to "cstojs_options.xml" and run "cstojs-cli translate" again.
+- To add a new CS file, run `cstojs-cli configure file "./Test.cs" --add` or edit the project file(in this case it is "cstojs_options.xml") by hand:`<File Source="./Test.cs" />` and run "cstojs-cli translate" again.
 - To update, run:
 ```csharp
 dotnet tool update --global TiLied.CSTOJS_CLI
@@ -104,7 +104,7 @@ Description:
   Dotnet tool/cli frontend for a CSharpToJavaScript library.
 
 Usage:
-  CSTOJS_CLI [command] [options]
+  cstojs-cli [command] [options]
 
 Options:
   --disable-console-output  Self-explanatory, Disable Console Output.
@@ -113,14 +113,15 @@ Options:
   --version                 Show version information
 
 Commands:
-  init <folder>   Create a barebone 'cstojs_options.xml' in the current directory, without running the dotnet commands.
+  init <folder>   Creates a barebone project file(default 'cstojs_options.xml') in the current directory, without running 
+                  the dotnet commands.
                   This command should be used if a C# project already exists.
   setup <folder>  Setup cstojs project in the current directory.
                   This command should be used if you are starting from scratch.
-  translate       Translate specified files in the 'cstojs_options.xml'.
-  watch           Watches specified files in the 'cstojs_options.xml' with an interval and translates them. 
-                  Note: The 'cstojs_options.xml' file is not being monitored, so any changes require the command to be 
-                  restarted.
+  translate       Translate specified files in the --project file.
+  watch           Watches specified files in the --project file with an interval and translates them. 
+                  Note: The --project file is not being monitored, so any changes to it require the command to be restarted.
+  configure       Configure the project file without editing the xml by hand.
 ```
 
 ## Related Repository 
