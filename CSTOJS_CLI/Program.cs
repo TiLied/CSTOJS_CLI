@@ -769,21 +769,21 @@ Note: The --project file is not being monitored, so any changes to it require th
 					{
 						data.Files[i].SourceStr = File.ReadAllText(data.Files[i].SourceFilePath);
 
-						FileData2 translatedFile = (FileData2)CSTOJS.Translate(data.Files[i]);
+						FileData2[] _translatedFiles = (FileData2[])CSTOJS.Translate(data.Files.ToArray());
 
-						string pathCombined = Path.Combine(data.OutputPath, translatedFile.FileName);
-						await File.WriteAllTextAsync(pathCombined, translatedFile.TranslatedStr);
+						string _pathCombined = Path.Combine(data.OutputPath, _translatedFiles[i].FileName);
+						await File.WriteAllTextAsync(_pathCombined, _translatedFiles[i].TranslatedStr);
 
-						if (translatedFile.OptionsForFile.Debug)
+						if (_translatedFiles[i].OptionsForFile.Debug)
 						{
-							for (int j = 0; j < translatedFile.DebugStrings.Length; j++)
+							for (int j = 0; j < _translatedFiles[i].DebugStrings.Length; j++)
 							{
-								await File.WriteAllTextAsync(pathCombined + $".{j}.cstojs", translatedFile.DebugStrings[j]);
+								await File.WriteAllTextAsync(_pathCombined + $".{j}.cstojs", _translatedFiles[i].DebugStrings[j]);
 							}
 						}
 
 						Log.InfoLine($"--- Directory: {Path.GetFullPath(data.OutputPath)}");
-						Log.InfoLine($"--- --- File: {translatedFile.FileName}");
+						Log.InfoLine($"--- --- File: {_translatedFiles[i].FileName}");
 
 						dateTimes[data.Files[i].SourceFilePath] = time;
 					}
