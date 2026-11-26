@@ -40,7 +40,7 @@ cstojs-cli setup "Output"
 - - The command executes:
 - - - dotnet new console -f net10.0
 - - - dotnet add package CSharpToJavaScript
-- - - Creating "Output" folder
+- - - Creating "./Output" folder
 - - - Creating "cstojs_options.xml"
 - - Structure will be:
 ```csharp
@@ -75,7 +75,7 @@ For more information and an explanation of each element, visit the [website](htt
   <Output Folder="./Output" />
 
   <!-- This is the default option which will be applied to every file that follows. -->
-  <!-- See all available options at https://github.com/TiLied/CSharpToJavaScript/blob/master/CSharpToJavaScript/CSTOJSOptions.cs -->
+  <!-- See all available options at https://tilied.github.io/CSTOJS_Pages/api/CSharpToJavaScript.CSTOJSOptions.html -->
   <Option NormalizeWhitespace="true" />
 
   <!-- This is a file that will be translated to js. -->
