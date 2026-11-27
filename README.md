@@ -33,15 +33,16 @@ dotnet tool install --global TiLied.CSTOJS_CLI
 ```
 - - To install locally, follow [this tutorial](https://learn.microsoft.com/en-us/dotnet/core/tools/local-tools-how-to-use)
 - - For linux update PATH, see [documentation](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-tool-install#global-tools)
+- - [Github releases](https://github.com/TiLied/CSTOJS_CLI/releases) include standalone binaries.
 - Make a new directory "Test". Inside that directory, run:
 ```csharp
-cstojs-cli setup "Output"
+cstojs-cli setup "./Output"
 ```
 - - The command executes:
 - - - dotnet new console -f net10.0
 - - - dotnet add package CSharpToJavaScript
-- - - Creating "./Output" folder
-- - - Creating "cstojs_options.xml"
+- - - Creating an "Output" folder
+- - - Creating a "cstojs_options.xml" file
 - - Structure will be:
 ```csharp
 - obj
@@ -51,7 +52,7 @@ cstojs-cli setup "Output"
 - Test.csproj
 ```
 - - The "Output" folder is where the translated JS files will be.
-- - "cstojs_options.xml" is project options, see below for an example.
+- - "cstojs_options.xml" is the project options, see below for an example.
 - To translate "Program.cs", run:
 ```csharp
 cstojs-cli translate
