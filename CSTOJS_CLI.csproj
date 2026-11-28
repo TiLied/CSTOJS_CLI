@@ -48,8 +48,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CSharpToJavaScript" Version="0.2.5" />
-    <PackageReference Include="System.CommandLine" Version="2.0.11" />
+    <PackageReference Include="CSharpToJavaScript" Version="0.2.6" />
+    <PackageReference Include="System.CommandLine" Version="2.0.15" />
   </ItemGroup>	
 
 </Project>
