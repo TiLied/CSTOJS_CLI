@@ -114,7 +114,7 @@ Note: The --project file is not being monitored, so any changes to it require th
 		//
 		//
 		//configure commands/options:
-		Command configureCommand = new("configure", @"Configure the project file without editing the xml by hand.");
+		Command configureCommand = new("configure", @"Configure the --project file without editing the xml by hand.");
 		configureCommand.Options.Add(projectPath);
 
 		Option<string> fileOption = new("--file")
@@ -502,14 +502,8 @@ Note: The --project file is not being monitored, so any changes to it require th
 								if (reader.IsEmptyElement)
 									currentFile.OptionsForFile = defaultOptions;
 								else
-								{
-									//https://stackoverflow.com/a/8100477
-									reader.ReadStartElement();
-									if (reader.IsStartElement())
-										currentFile.OptionsForFile = new();
-									else
-										currentFile.OptionsForFile = defaultOptions;
-								}
+									currentFile.OptionsForFile = new(defaultOptions);
+									
 								data.Files.Add(currentFile);
 								break;
 							}
