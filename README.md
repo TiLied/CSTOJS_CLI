@@ -7,35 +7,35 @@ The CLI was inspired (a little) by Meson, but should behave more or less like th
 
 ## Quick start
 ### To install:
-```csharp
+```shell
 dotnet tool install --global TiLied.CSTOJS_CLI
 ```
 ### To use:
-```csharp
+```shell
 cstojs-cli setup "./Output"
 ```
-```csharp
+```shell
 cstojs-cli translate
 ```
 ### To update:
-```csharp
+```shell
 dotnet tool update --global TiLied.CSTOJS_CLI
 ```
 ### To uninstall:
-```csharp
+```shell
 dotnet tool uninstall --global TiLied.CSTOJS_CLI
 ```
 ## In-depth start
 - [Dotnet 10](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) required.
 -  To install dotnet tool globally run:
-```csharp
+```shell
 dotnet tool install --global TiLied.CSTOJS_CLI
 ```
 - - To install locally, follow [this tutorial](https://learn.microsoft.com/en-us/dotnet/core/tools/local-tools-how-to-use)
 - - For linux update PATH, see [documentation](https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-tool-install#global-tools)
 - - [Github releases](https://github.com/TiLied/CSTOJS_CLI/releases) include standalone binaries.
 - Make a new directory "Test". Inside that directory, run:
-```csharp
+```shell
 cstojs-cli setup "./Output"
 ```
 - - The command executes:
@@ -44,7 +44,7 @@ cstojs-cli setup "./Output"
 - - - Creating an "Output" folder
 - - - Creating a "cstojs_options.xml" file
 - - Structure will be:
-```csharp
+```
 - obj
 - Output
 - cstojs_options.xml
@@ -54,17 +54,17 @@ cstojs-cli setup "./Output"
 - - The "Output" folder is where the translated JS files will be.
 - - "cstojs_options.xml" is the project options, see below for an example.
 - To translate "Program.cs", run:
-```csharp
+```shell
 cstojs-cli translate
 ```
 - - The "Output" folder will contain a translated "Program.js" file.
-- To add a new CS file, run `cstojs-cli configure file "./Test.cs" --add` or edit the project file(in this case it is "cstojs_options.xml") by hand:`<File Source="./Test.cs" />` and run "cstojs-cli translate" again.
+- To add a new CS file, run `cstojs-cli configure file "./Test.cs" --add` or edit the project file(in this case it is "cstojs_options.xml") by hand:`<File Source="./Test.cs" />` and run `cstojs-cli translate` again.
 - To update, run:
-```csharp
+```shell
 dotnet tool update --global TiLied.CSTOJS_CLI
 ```
 - To uninstall, run:
-```csharp
+```shell
 dotnet tool uninstall --global TiLied.CSTOJS_CLI
 ```
 
@@ -101,7 +101,7 @@ For more information and an explanation of each element, visit the [website](htt
 
 ## cstojs-cli -h
 Run subcommands with `-h` to get more information or visit the [website](https://tilied.github.io/CSTOJS_Pages/cli/cli.html).
-```
+```shell
 Description:
   Dotnet tool/cli frontend for a CSharpToJavaScript library.
 
@@ -123,7 +123,7 @@ Commands:
   translate       Translate specified files in the --project file.
   watch           Watches specified files in the --project file with an interval and translates them. 
                   Note: The --project file is not being monitored, so any changes to it require the command to be restarted.
-  configure       Configure the project file without editing the xml by hand.
+  configure       Configure the --project file without editing the xml by hand.
 ```
 
 ## Related Repository 
